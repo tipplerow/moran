@@ -34,4 +34,8 @@ public class ScalarCell extends Cell {
     @Override public ScalarGenotype getGenotype() {
         return (ScalarGenotype) super.getGenotype();
     }
+
+    @Override public String toString() {
+        return "ScalarCell(" + getFitness() + ")";
+    }
 }
