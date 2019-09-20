@@ -3,6 +3,12 @@ package moran.junit;
 
 import java.util.List;
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
+
+import jam.junit.NumericTestBase;
+import jam.util.MultisetUtil;
+
 import moran.cell.Cell;
 import moran.scalar.ScalarCell;
 import moran.space.Coord;
@@ -11,12 +17,13 @@ import moran.space.Space;
 import org.junit.*;
 import static org.junit.Assert.*;
 
-public class LinearSpaceTest {
+public class LinearSpaceTest extends NumericTestBase {
     private static final Cell cell0 = new ScalarCell(1.0);
     private static final Cell cell1 = new ScalarCell(1.1);
     private static final Cell cell2 = new ScalarCell(1.2);
     private static final Cell cell3 = new ScalarCell(1.3);
     private static final Cell cell4 = new ScalarCell(1.4);
+    private static final Cell cell5 = new ScalarCell(1.5);
 
     private static final Coord coord0 = new Coord(0);
     private static final Coord coord1 = new Coord(1);
@@ -94,6 +101,76 @@ public class LinearSpaceTest {
 
         assertNull(hardwall.locate(cell4));
         assertNull(periodic.locate(cell4));
+    }
+
+    @Test public void testReplace() {
+        Space space = Space.linear(List.of(cell0, cell1, cell2, cell3), true);
+
+        assertEquals(4, space.size());
+        
+        assertTrue(space.contains(cell0));
+        assertTrue(space.contains(cell1));
+        assertTrue(space.contains(cell2));
+        assertTrue(space.contains(cell3));
+        assertFalse(space.contains(cell4));
+        assertFalse(space.contains(cell5));
+
+        assertEquals(coord0, space.locate(cell0));
+        assertEquals(coord1, space.locate(cell1));
+        assertEquals(coord2, space.locate(cell2));
+        assertEquals(coord3, space.locate(cell3));
+        assertNull(space.locate(cell4));
+        assertNull(space.locate(cell5));
+
+        space.replace(cell1, cell4);
+        assertEquals(4, space.size());
+        
+        assertTrue(space.contains(cell0));
+        assertFalse(space.contains(cell1));
+        assertTrue(space.contains(cell2));
+        assertTrue(space.contains(cell3));
+        assertTrue(space.contains(cell4));
+        assertFalse(space.contains(cell5));
+
+        assertEquals(coord0, space.locate(cell0));
+        assertEquals(coord1, space.locate(cell4));
+        assertEquals(coord2, space.locate(cell2));
+        assertEquals(coord3, space.locate(cell3));
+        assertNull(space.locate(cell1));
+        assertNull(space.locate(cell5));
+
+        space.replace(cell3, cell5);
+        assertEquals(4, space.size());
+        
+        assertTrue(space.contains(cell0));
+        assertFalse(space.contains(cell1));
+        assertTrue(space.contains(cell2));
+        assertFalse(space.contains(cell3));
+        assertTrue(space.contains(cell4));
+        assertTrue(space.contains(cell5));
+
+        assertEquals(coord0, space.locate(cell0));
+        assertEquals(coord1, space.locate(cell4));
+        assertEquals(coord2, space.locate(cell2));
+        assertEquals(coord3, space.locate(cell5));
+        assertNull(space.locate(cell1));
+        assertNull(space.locate(cell3));
+    }
+
+    @Test public void testSelect() {
+        Multiset<Cell> selections = HashMultiset.create();
+
+        while (selections.size() < 1000000)
+            selections.add(periodic.select());
+
+        assertEquals(0.25, MultisetUtil.frequency(selections, cell0), 0.001);
+        assertEquals(0.25, MultisetUtil.frequency(selections, cell1), 0.001);
+        assertEquals(0.25, MultisetUtil.frequency(selections, cell2), 0.001);
+        assertEquals(0.25, MultisetUtil.frequency(selections, cell3), 0.001);
+    }
+
+    @Test public void testSize() {
+        assertEquals(4, periodic.size());
     }
 
     public static void main(String[] args) {
