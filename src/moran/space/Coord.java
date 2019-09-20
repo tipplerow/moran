@@ -2,11 +2,16 @@
 package moran.space;
 
 import java.util.Arrays;
+import java.util.Collection;
+
+import jam.lang.JamException;
+import jam.util.CollectionUtil;
 
 /**
  * Represents the spatial coordinate of a cell in a Moran simulation.
  */
 public final class Coord {
+    private final int hash;
     private final int[] coord;
 
     /**
@@ -15,6 +20,7 @@ public final class Coord {
      * @param coord the fixed components.
      */
     public Coord(int... coord) {
+        this.hash  = Arrays.hashCode(coord);
         this.coord = Arrays.copyOf(coord, coord.length);
     }
 
@@ -22,6 +28,26 @@ public final class Coord {
      * The single zero-dimensional point coordinate.
      */
     public static final Coord POINT = new Coord();
+
+    /**
+     * Ensures that all coordinates in a collection have the same
+     * dimensionality.
+     *
+     * @param coords the coordinates to validate.
+     *
+     * @throws RuntimeException unless all coordinates have the same
+     * dimensionality.
+     */
+    public static void validateDimensionality(Collection<Coord> coords) {
+        if (coords.isEmpty())
+            return;
+
+        int dim = CollectionUtil.peek(coords).dimensionality();
+
+        for (Coord coord : coords)
+            if (coord.dimensionality() != dim)
+                throw JamException.runtime("Inconsistent dimensionality.");
+    }
 
     /**
      * Returns the coordinate value along a given dimension.
@@ -54,6 +80,6 @@ public final class Coord {
     }
 
     @Override public int hashCode() {
-        return Arrays.hashCode(coord);
+        return hash;
     }
 }
