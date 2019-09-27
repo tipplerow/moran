@@ -1,5 +1,5 @@
 
-package moran.space;
+package moran.cell;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -8,16 +8,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jam.bravais.Lattice;
 import jam.util.ListUtil;
 
-import moran.cell.Cell;
-
 /**
- * Represents the spatial arrangement of the fixed-size population of
- * cells in a Moran simulation.
+ * Represents the fixed-size population of cells in a Moran
+ * simulation.
  */
-public abstract class Space implements SpaceView {
+public class Population implements PopulationView {
     //
     // The cells must be stored in a random-access list for efficient
     // random selection, and the list must be indexed by a hash table
@@ -27,14 +24,14 @@ public abstract class Space implements SpaceView {
     private final Map<Cell, Integer> indexMap;
 
     /**
-     * Creates a new space and populates it with a collection of
+     * Creates a new population and fills it with a collection of
      * cells.
      *
-     * @param cells the initial occupants of the space.
+     * @param cells the initial members of the population.
      *
      * @throws IllegalArgumentException unless all cells are unique.
      */
-    protected Space(Collection<Cell> cells) {
+    public Population(Collection<Cell> cells) {
         this.cellList = new ArrayList<Cell>(cells);
         this.indexMap = new HashMap<Cell, Integer>(cells.size());
 
@@ -54,50 +51,32 @@ public abstract class Space implements SpaceView {
     }
 
     /**
-     * Creates a new zero-dimensional point space.
+     * Creates a new fixed-size population.
      *
-     * @param cells the initial occupants of the space.
+     * @param cells the initial members of the population.
      *
-     * @return the new space containing the specified cells.
+     * @return the new population.
      *
      * @throws IllegalArgumentException unless all cells are unique.
      */
-    public static Space point(Collection<Cell> cells) {
-        return PointSpace.create(cells);
+    public static Population create(Collection<Cell> cells) {
+        return new Population(cells);
     }
 
     /**
-     * Creates a new space with cells distributed on a lattice.
-     *
-     * @param cells the initial occupants of the space.
-     *
-     * @param lattice a lattice completely filled with the initial
-     * cells.
-     *
-     * @return the new space containing the specified cells at the
-     * spatial locations on the specified lattice.
-     *
-     * @throws IllegalArgumentException unless all cells are unique
-     * and the cells completely fill the lattice.
-     */
-    public static Space lattice(Collection<Cell> cells, Lattice<Cell> lattice) {
-        return LatticeSpace.create(cells, lattice);
-    }
-
-    /**
-     * Replaces one cell with another (at the same location).
+     * Replaces one cell with another.
      *
      * @param oldCell the old cell to remove.
      *
      * @param newCell the new cell to add.
      *
-     * @throws IllegalArgumentException unless this space already
-     * contains the old cell and does not already contain the new
-     * cell.
+     * @throws IllegalArgumentException unless this population already
+     * contains the old cell and does not contain the new cell.
      */
     public void replace(Cell oldCell, Cell newCell) {
         //
-        // Place the new cell at the same location...
+        // Place the new cell in the same list element to avoid
+        // adding or removing elements from the list...
         //
         Integer index = indexMap.get(oldCell);
 
@@ -110,10 +89,10 @@ public abstract class Space implements SpaceView {
     }
 
     /**
-     * Selects one cell from this space at random (with equal
+     * Selects one cell from this population at random (with equal
      * likelihood for all).
      *
-     * @return one cell from this space selected at random.
+     * @return one cell from this population selected at random.
      */
     public Cell select() {
         return ListUtil.select(cellList);

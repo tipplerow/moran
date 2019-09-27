@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import jam.math.Point;
+import jam.math.Point1D;
+
 import moran.cell.Cell;
 
 final class PointSpace extends Space {
@@ -30,5 +33,12 @@ final class PointSpace extends Space {
 
         assert neighbors.size() == size() - 1;
         return neighbors;
+    }
+
+    @Override public Point locate(Cell cell) {
+        if (contains(cell))
+            return Point1D.ORIGIN;
+        else
+            return null;
     }
 }
