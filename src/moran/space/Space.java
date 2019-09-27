@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jam.bravais.Lattice;
 import jam.util.ListUtil;
 
 import moran.cell.Cell;
@@ -63,6 +64,24 @@ public abstract class Space {
      */
     public static Space point(Collection<Cell> cells) {
         return PointSpace.create(cells);
+    }
+
+    /**
+     * Creates a new space with cells distributed on a lattice.
+     *
+     * @param cells the initial occupants of the space.
+     *
+     * @param lattice a lattice completely filled with the initial
+     * cells.
+     *
+     * @return the new space containing the specified cells at the
+     * spatial locations on the specified lattice.
+     *
+     * @throws IllegalArgumentException unless all cells are unique
+     * and the cells completely fill the lattice.
+     */
+    public static Space lattice(Collection<Cell> cells, Lattice<Cell> lattice) {
+        return LatticeSpace.create(cells, lattice);
     }
 
     /**
