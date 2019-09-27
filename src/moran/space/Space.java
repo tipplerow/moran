@@ -8,13 +8,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jam.lang.JamException;
 import jam.util.ListUtil;
 
 import moran.cell.Cell;
 
 /**
- * Represents the spatial arrangement of cells in a Moran simulation.
+ * Represents the spatial arrangement of fixed-size population of
+ * cells in a Moran simulation.
  */
 public abstract class Space {
     //
@@ -31,7 +31,7 @@ public abstract class Space {
      *
      * @param cells the initial occupants of the space.
      *
-     * @throws RuntimeException unless all cells are unique.
+     * @throws IllegalArgumentException unless all cells are unique.
      */
     protected Space(Collection<Cell> cells) {
         this.cellList = new ArrayList<Cell>(cells);
@@ -42,25 +42,14 @@ public abstract class Space {
     }
 
     private void mapCells() {
-        for (int index = 0; index < cellList.size(); ++index)
-            if (indexMap.put(cellList.get(index), index) != null)
-                throw JamException.runtime("Duplicate cell.");
-    }
-
-    /**
-     * Creates a new one-dimensional cellular space.
-     *
-     * @param cells the initial occupants of the space.
-     *
-     * @param periodic whether or not to apply periodic boundary
-     * conditions when determining neighboring cells.
-     *
-     * @return the new space containing the specified cells.
-     *
-     * @throws RuntimeException unless all cells are unique.
-     */
-    public static Space linear(Collection<Cell> cells, boolean periodic) {
-        return LinearSpace.create(cells, periodic);
+        for (int index = 0; index < cellList.size(); ++index) {
+            Cell cell = cellList.get(index);
+            
+            if (indexMap.containsKey(cell))
+                throw new IllegalArgumentException("Duplicate cell.");
+            else
+                indexMap.put(cell, index);
+        }
     }
 
     /**
@@ -70,33 +59,11 @@ public abstract class Space {
      *
      * @return the new space containing the specified cells.
      *
-     * @throws RuntimeException unless all cells are unique.
+     * @throws IllegalArgumentException unless all cells are unique.
      */
     public static Space point(Collection<Cell> cells) {
-        return new PointSpace(cells);
+        return PointSpace.create(cells);
     }
-
-    /**
-     * Identifies cells that reside in this space.
-     *
-     * @param cell a cell to examine.
-     *
-     * @return {@code true} iff the specified cell resides in this
-     * space.
-     */
-    public boolean contains(Cell cell) {
-        return indexMap.containsKey(cell);
-    }
-
-    /**
-     * Identifies coordinates that compose this space.
-     *
-     * @param coord a coordinate to examine.
-     *
-     * @return {@code true} iff this space contains the specified
-     * coordinate.
-     */
-    public abstract boolean contains(Coord coord);
 
     /**
      * Returns the neighbors of a given cell: the cells that may
@@ -113,6 +80,18 @@ public abstract class Space {
     public abstract List<Cell> getNeighbors(Cell cell);
 
     /**
+     * Identifies occupants of this space.
+     *
+     * @param cell a cell to examine.
+     *
+     * @return {@code true} iff the specified cell resides in this
+     * space.
+     */
+    public boolean contains(Cell cell) {
+        return indexMap.containsKey(cell);
+    }
+
+    /**
      * Returns a read-only list view of the cells in this space.
      *
      * @return a read-only list view of the cells in this space.
@@ -122,71 +101,27 @@ public abstract class Space {
     }
 
     /**
-     * Returns the location of a given cell in this space.
-     *
-     * @param cell the cell to locate.
-     *
-     * @return the location of the given cell (or {@code null} if the
-     * cell does not reside in this space).
-     */
-    public abstract Coord locate(Cell cell);
-
-    /**
-     * Places a cell at a specific location in this space.
-     *
-     * @param cell the cell to place.
-     *
-     * @param coord the location where the cell will be placed.
-     *
-     * @throws RuntimeException unless the given coordinate lies
-     * within this space.
-     */
-    protected void place(Cell cell, Coord coord) {
-        if (contains(coord))
-            placeValid(cell, coord);
-        else
-            throw JamException.runtime("Coordinate lies outside of this space.");
-    }
-
-    /**
-     * Places a cell at a specific location, which has been guaranteed
-     * to lie in this space.
-     *
-     * @param cell the cell to place.
-     *
-     * @param coord the location where the cell will be placed.
-     */
-    protected abstract void placeValid(Cell cell, Coord coord);
-
-    /**
      * Replaces one cell with another (at the same location).
      *
      * @param oldCell the old cell to remove.
      *
      * @param newCell the new cell to add.
      *
-     * @throws RuntimeException unless the old cell resides in this
-     * space.
+     * @throws IllegalArgumentException unless this space already
+     * contains the old cell and does not already contain the new
+     * cell.
      */
     public void replace(Cell oldCell, Cell newCell) {
         //
-        // Place the new cell at the same spatial location and with
-        // the same sequential list index...
+        // Place the new cell at the same location...
         //
-        Coord   coord = locate(oldCell);
         Integer index = indexMap.get(oldCell);
 
-        if (coord == null)
-            throw JamException.runtime("Missing cellular location.");
-
         if (index == null)
-            throw JamException.runtime("Missing cellular index.");
-
-        placeValid(newCell, coord);
+            throw new IllegalArgumentException("Cannot find the cell to replace.");
 
         cellList.set(index, newCell);
         indexMap.put(newCell, index);
-
         indexMap.remove(oldCell);
     }
 

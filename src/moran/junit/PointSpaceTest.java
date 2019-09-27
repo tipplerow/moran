@@ -11,7 +11,6 @@ import jam.util.MultisetUtil;
 
 import moran.cell.Cell;
 import moran.scalar.ScalarCell;
-import moran.space.Coord;
 import moran.space.Space;
 
 import org.junit.*;
@@ -49,15 +48,6 @@ public class PointSpaceTest extends NumericTestBase {
         assertEquals(cell1, FIXED.list().get(1));
         assertEquals(cell2, FIXED.list().get(2));
         assertEquals(cell3, FIXED.list().get(3));
-    }
-
-    @Test public void testLocate() {
-        assertEquals(Coord.POINT, FIXED.locate(cell0));
-        assertEquals(Coord.POINT, FIXED.locate(cell1));
-        assertEquals(Coord.POINT, FIXED.locate(cell2));
-        assertEquals(Coord.POINT, FIXED.locate(cell3));
-        assertNull(FIXED.locate(cell4));
-        assertNull(FIXED.locate(cell5));
     }
 
     @Test public void testReplace() {

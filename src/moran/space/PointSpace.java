@@ -7,24 +7,13 @@ import java.util.List;
 
 import moran.cell.Cell;
 
-/**
- * Represents a zero-dimensional space where all cells occupy a single
- * point.
- */
-public final class PointSpace extends Space {
-    /**
-     * Creates a new zero-dimensional point space.
-     *
-     * @param cells the initial occupants of the space.
-     *
-     * @throws RuntimeException unless all cells are unique.
-     */
-    public PointSpace(Collection<Cell> cells) {
+final class PointSpace extends Space {
+    private PointSpace(Collection<Cell> cells) {
         super(cells);
     }
 
-    @Override public boolean contains(Coord coord) {
-        return coord.equals(Coord.POINT);
+    static PointSpace create(Collection<Cell> cells) {
+        return new PointSpace(cells);
     }
 
     @Override public List<Cell> getNeighbors(Cell target) {
@@ -41,18 +30,5 @@ public final class PointSpace extends Space {
 
         assert neighbors.size() == size() - 1;
         return neighbors;
-    }
-
-    @Override public Coord locate(Cell cell) {
-        if (contains(cell))
-            return Coord.POINT;
-        else
-            return null;
-    }
-
-    @Override protected void placeValid(Cell cell, Coord coord) {
-        //
-        // The POINT coordinates are not explicitly stored: this is a no-op...
-        //
     }
 }
