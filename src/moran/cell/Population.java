@@ -51,19 +51,6 @@ public class Population implements PopulationView {
     }
 
     /**
-     * Creates a new fixed-size population.
-     *
-     * @param cells the initial members of the population.
-     *
-     * @return the new population.
-     *
-     * @throws IllegalArgumentException unless all cells are unique.
-     */
-    public static Population create(Collection<Cell> cells) {
-        return new Population(cells);
-    }
-
-    /**
      * Replaces one cell with another.
      *
      * @param oldCell the old cell to remove.

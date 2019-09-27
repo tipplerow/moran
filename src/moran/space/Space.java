@@ -12,20 +12,13 @@ import jam.bravais.Lattice;
 import jam.util.ListUtil;
 
 import moran.cell.Cell;
+import moran.cell.Population;
 
 /**
  * Represents the spatial arrangement of the fixed-size population of
  * cells in a Moran simulation.
  */
-public abstract class Space implements SpaceView {
-    //
-    // The cells must be stored in a random-access list for efficient
-    // random selection, and the list must be indexed by a hash table
-    // for efficient replacement of dead cells...
-    //
-    private final List<Cell> cellList;
-    private final Map<Cell, Integer> indexMap;
-
+public abstract class Space extends Population implements SpaceView {
     /**
      * Creates a new space and populates it with a collection of
      * cells.
@@ -35,22 +28,7 @@ public abstract class Space implements SpaceView {
      * @throws IllegalArgumentException unless all cells are unique.
      */
     protected Space(Collection<Cell> cells) {
-        this.cellList = new ArrayList<Cell>(cells);
-        this.indexMap = new HashMap<Cell, Integer>(cells.size());
-
-        mapCells();
-        assert cellList.size() == indexMap.size();
-    }
-
-    private void mapCells() {
-        for (int index = 0; index < cellList.size(); ++index) {
-            Cell cell = cellList.get(index);
-            
-            if (indexMap.containsKey(cell))
-                throw new IllegalArgumentException("Duplicate cell.");
-            else
-                indexMap.put(cell, index);
-        }
+        super(cells);
     }
 
     /**
@@ -82,52 +60,5 @@ public abstract class Space implements SpaceView {
      */
     public static Space lattice(Collection<Cell> cells, Lattice<Cell> lattice) {
         return LatticeSpace.create(cells, lattice);
-    }
-
-    /**
-     * Replaces one cell with another (at the same location).
-     *
-     * @param oldCell the old cell to remove.
-     *
-     * @param newCell the new cell to add.
-     *
-     * @throws IllegalArgumentException unless this space already
-     * contains the old cell and does not already contain the new
-     * cell.
-     */
-    public void replace(Cell oldCell, Cell newCell) {
-        //
-        // Place the new cell at the same location...
-        //
-        Integer index = indexMap.get(oldCell);
-
-        if (index == null)
-            throw new IllegalArgumentException("Cannot find the cell to replace.");
-
-        cellList.set(index, newCell);
-        indexMap.put(newCell, index);
-        indexMap.remove(oldCell);
-    }
-
-    /**
-     * Selects one cell from this space at random (with equal
-     * likelihood for all).
-     *
-     * @return one cell from this space selected at random.
-     */
-    public Cell select() {
-        return ListUtil.select(cellList);
-    }
-
-    @Override public boolean contains(Cell cell) {
-        return indexMap.containsKey(cell);
-    }
-
-    @Override public List<Cell> list() {
-        return Collections.unmodifiableList(cellList);
-    }
-
-    @Override public int size() {
-        return cellList.size();
     }
 }
