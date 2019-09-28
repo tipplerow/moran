@@ -1,6 +1,7 @@
 
 package moran.junit;
 
+import java.util.Iterator;
 import java.util.List;
 
 import moran.cell.Cell;
@@ -28,6 +29,24 @@ public class PopulationTest {
         assertTrue(FIXED.contains(cell3));
         assertFalse(FIXED.contains(cell4));
         assertFalse(FIXED.contains(cell5));
+    }
+
+    @Test public void testIterator() {
+        Iterator<Cell> iterator = FIXED.iterator();
+
+        assertTrue(iterator.hasNext());
+        assertEquals(cell0, iterator.next());
+
+        assertTrue(iterator.hasNext());
+        assertEquals(cell1, iterator.next());
+
+        assertTrue(iterator.hasNext());
+        assertEquals(cell2, iterator.next());
+
+        assertTrue(iterator.hasNext());
+        assertEquals(cell3, iterator.next());
+
+        assertFalse(iterator.hasNext());
     }
 
     @Test public void testList() {

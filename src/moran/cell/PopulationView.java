@@ -1,13 +1,14 @@
 
 package moran.cell;
 
+import java.util.Iterator;
 import java.util.List;
 
 /**
  * Provides a read-only view of the fixed-size population of cells in
  * a Moran simulation.
  */
-public interface PopulationView {
+public interface PopulationView extends Iterable<Cell> {
     /**
      * Identifies members of this population.
      *
@@ -31,4 +32,8 @@ public interface PopulationView {
      * @return the fixed number of cells in this population.
      */
     public int size();
+
+    @Override public default Iterator<Cell> iterator() {
+        return list().iterator();
+    }
 }
