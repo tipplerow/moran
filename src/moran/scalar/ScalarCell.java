@@ -4,11 +4,14 @@ package moran.scalar;
 import moran.cell.Cell;
 
 /**
- * The fundamental agent in a Moran simulation.
+ * Represents a cell whose genotype and phenotype are completely
+ * defined by a single scalar fitness.
  */
-public class ScalarCell extends Cell {
+public class ScalarCell implements Cell {
+    private final ScalarGenotype genotype;
+
     private ScalarCell(ScalarGenotype genotype) {
-        super(genotype);
+        this.genotype = genotype;
     }
 
     /**
@@ -28,11 +31,11 @@ public class ScalarCell extends Cell {
      * @return a new identical daughter cell.
      */
     @Override public ScalarCell divide() {
-        return new ScalarCell(getGenotype());
+        return new ScalarCell(genotype);
     }
 
     @Override public ScalarGenotype getGenotype() {
-        return (ScalarGenotype) super.getGenotype();
+        return genotype;
     }
 
     @Override public String toString() {

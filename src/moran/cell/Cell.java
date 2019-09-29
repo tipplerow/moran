@@ -4,24 +4,7 @@ package moran.cell;
 /**
  * The fundamental agent in a Moran simulation.
  */
-public abstract class Cell {
-    private final Genotype genotype;
-
-    /**
-     * Creates a new cell with a fixed genotype.
-     *
-     * @param genotype the fixed genotype.
-     */
-    protected Cell(Genotype genotype) {
-        validateGenotype(genotype);
-        this.genotype = genotype;
-    }
-
-    private static void validateGenotype(Genotype genotype) {
-        if (genotype == null)
-            throw new NullPointerException("Null genotype.");
-    }
-
+public interface Cell {
     /**
      * Creates a new (possibly mutated) daughter cell.
      *
@@ -34,8 +17,15 @@ public abstract class Cell {
      *
      * @return the underlying genotype for this cell.
      */
-    public Genotype getGenotype() {
-        return genotype;
+    public abstract Genotype getGenotype();
+
+    /**
+     * Returns the expressed phenotype for this cell.
+     *
+     * @return the expressed phenotype for this cell.
+     */
+    public default Phenotype getPhenotype() {
+        return getGenotype().getPhenotype();
     }
 
     /**
@@ -43,7 +33,7 @@ public abstract class Cell {
      *
      * @return the relative scalar fitness of this cell.
      */
-    public double getFitness() {
-        return genotype.getPhenotype().getFitness();
+    public default double getFitness() {
+        return getPhenotype().getFitness();
     }
 }
