@@ -3,68 +3,31 @@ package moran.driver;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.util.List;
 import java.util.Map;
 
 import jam.app.JamLogger;
 import jam.app.JamProperties;
-import jam.dist.ExponentialDistribution;
+import jam.math.DoubleRange;
 import jam.math.IntRange;
-import jam.math.JamRandom;
 import jam.sim.DiscreteTimeSimulation;
-import jam.vector.VectorUtil;
 
 import moran.cell.Cell;
 import moran.space.Space;
 import moran.space.SpaceView;
 
 /**
- * Provides a basic implementation of a spatial Moran simulation of an
- * evolving fixed-size cellular population.
- *
- * <p>In addition to providing bookkeeping and reporting functions,
- * this class implements the core process in all Moran simulations:
- * the cycle of cell death and division.  The cell cycle proceeds as
- * follows:
- *
- * <ol>
- *   <li>
- *      Select a cell {@code I} at random from the population, with
- *      equal probability for all cells; this cell dies and allows
- *      a neighbor to divide.
- *   </li>
- *   <li>
- *     Update the dimensionless time clock according to the fitness
- *     of the neighbors of cell {@code I}.
- *   </li>
- *   <li>
- *     Select another cell {@code J} at random from the neighbors of
- *     cell {@code I} with a probability proportional to the fitness
- *     of cell {@code J}.
- *   </li>
- *   <li>
- *     Replace cell {@code I} with a daughter of cell {@code J}.
- *   </li>
- * </ol>
+ * Provides a base class for applications running simulations of
+ * spatial Moran models.
  */
 public abstract class MoranDriver extends DiscreteTimeSimulation {
     private final int trialTarget;
     private final int maxStepCount;
     private final int snapInterval;
-    private final double fitnessThreshold;
 
-    // The cell space for the active simulation trial...
-    private Space space;
+    private final DoubleRange fitnessRange;
 
-    // The average fitness of cells in the population...
-    private double meanFitness;
-
-    // The continuous (dimensionless) time elapsed in the active
-    // simulation trial...
-    private double timeClock;
-
-    // The random number source...
-    private final JamRandom random = JamRandom.global();
+    // The active Moran process for the current simulation trial...
+    private MoranProcess process;
 
     /**
      * Creates a new simulation instance and reads system properties
@@ -80,8 +43,7 @@ public abstract class MoranDriver extends DiscreteTimeSimulation {
         this.trialTarget  = resolveTrialTarget();
         this.maxStepCount = resolveMaxStepCount();
         this.snapInterval = resolveSnapInterval();
-
-        this.fitnessThreshold = resolveFitnessThreshold();
+        this.fitnessRange = resolveFitnessRange();
     }
 
     private static int resolveTrialTarget() {
@@ -96,85 +58,12 @@ public abstract class MoranDriver extends DiscreteTimeSimulation {
         return JamProperties.getOptionalInt(SNAPSHOT_INTERVAL_PROPERTY, 0);
     }
 
-    private static double resolveFitnessThreshold() {
-        return JamProperties.getRequiredDouble(FITNESS_THRESHOLD_PROPERTY);
+    private static DoubleRange resolveFitnessRange() {
+        if (JamProperties.isSet(FITNESS_RANGE_PROPERTY))
+            return DoubleRange.parse(JamProperties.getRequired(FITNESS_RANGE_PROPERTY));
+        else
+            return DoubleRange.POSITIVE;
     }
-
-    // =====================================================================
-    // The following methods implement the core process in all spatial Moran
-    // simulations: the cycle of cell death and division.
-    // =====================================================================
-
-    private void executeCellCycle() {
-        //
-        // (1) Select a cell "I" at random from the population, with
-        // equal probability for all cells; this cell dies and allows
-        // a neighbor to divide.
-        //
-        // (2) Update the dimensionless time clock according to the
-        // fitness of the neighbors of cell "I".
-        //
-        // (3) Select another cell "J" at random from the neighbors of
-        // cell "I", with a probability proportional to its fitness.
-        //
-        // (4) Replace cell "I" with a daughter of cell "J".
-        //
-        Cell deadCell = space.select();
-
-        List<Cell> neighborCells = space.getNeighbors(deadCell);
-        double[]   neighborFit   = getNeighborFitness(neighborCells);
-
-        updateTimeClock(neighborFit);
-
-        Cell neighbor = selectNeighbor(neighborCells, neighborFit);
-        Cell daughter = neighbor.divide();
-
-        space.replace(deadCell, daughter);
-        updateMeanFitness(deadCell, daughter);
-    }
-
-    private static double[] getNeighborFitness(List<Cell> neighborCells) {
-        double[] neighborFit = new double[neighborCells.size()];
-
-        for (int k = 0; k < neighborCells.size(); ++k)
-            neighborFit[k] = neighborCells.get(k).getFitness();
-
-        return neighborFit;
-    }
-
-    private void updateTimeClock(double[] neighborFit) {
-        timeClock += tick(neighborFit);
-    }
-
-    private double tick(double[] neighborFit) {
-        //
-        // Each division event is modeled as a Poisson process, so we
-        // sample the elapased time from an exponential distribution
-        // with rate parameter equal to the sum of the fitness...
-        //
-        double sum  = VectorUtil.sum(neighborFit);
-        double time = ExponentialDistribution.sample(sum, random);
-
-        // To make the elapsed time independent of the population size
-        // and the coordination number of the lattice, we rescale the
-        // elapsed time by both quantities.
-        return time / (neighborFit.length * space.size());
-    }
-
-    private Cell selectNeighbor(List<Cell> neighborCells, double[] neighborFit) {
-        double[] divisionProb = VectorUtil.copy(neighborFit);
-
-        VectorUtil.normalize(divisionProb);
-        int neighborIndex = random.selectPDF(divisionProb);
-
-        return neighborCells.get(neighborIndex);
-    }
-
-    private void updateMeanFitness(Cell deadCell, Cell daughter) {
-        meanFitness += (daughter.getFitness() - deadCell.getFitness()) / space.size();
-    }
-
-    // =====================================================================
 
     /**
      * Name of the system property that defines the number of
@@ -189,11 +78,11 @@ public abstract class MoranDriver extends DiscreteTimeSimulation {
     public static final String MAX_STEP_COUNT_PROPERTY = "moran.driver.maxStepCount";
 
     /**
-     * Name of the system property that defines the fitness threshold:
-     * simulation trials stop when the mean fitness of the population
-     * exceeds this value.
+     * Name of the system property that defines the allowed fitness
+     * range: simulation trials stop if the mean fitness of the cell
+     * population moves outside of this range.
      */
-    public static final String FITNESS_THRESHOLD_PROPERTY = "moran.driver.fitnessThreshold";
+    public static final String FITNESS_RANGE_PROPERTY = "moran.driver.fitnessRange";
 
     /**
      * Name of the system property that defines the number of time
@@ -249,13 +138,13 @@ public abstract class MoranDriver extends DiscreteTimeSimulation {
     }
 
     /**
-     * Returns the fitness threshold: simulation trials stop when the
-     * average fitness of the population exceeds this value.
+     * Returns the allowed fitness range: simulation trials stop when
+     * the average fitness of the population moves out of this range.
      *
-     * @return the fitness threshold.
+     * @return the allowed fitness range.
      */
-    public double getFitnessThreshold() {
-        return fitnessThreshold;
+    public DoubleRange getFitnessRange() {
+        return fitnessRange;
     }
 
     /**
@@ -264,7 +153,19 @@ public abstract class MoranDriver extends DiscreteTimeSimulation {
      * @return the average fitness of the current cell population.
      */
     public double getMeanFitness() {
-        return meanFitness;
+        return process.getMeanFitness();
+    }
+
+    /**
+     * Returns the continuous elapsed time in the current simulation
+     * trial (normalized by the size of the cellular population and
+     * the coordination number of the underlying space).
+     *
+     * @return the continuous elapsed time in the current simulation
+     * trial.
+     */
+    public double getTimeClock() {
+        return process.getTimeClock();
     }
 
     /**
@@ -275,7 +176,7 @@ public abstract class MoranDriver extends DiscreteTimeSimulation {
      * simulation trial.
      */
     public SpaceView viewSpace() {
-        return space;
+        return process.viewSpace();
     }
 
     /**
@@ -296,10 +197,7 @@ public abstract class MoranDriver extends DiscreteTimeSimulation {
      * Logs a message to the console after every step.
      */
     protected void consoleLogStep() {
-        int trialIndex = getTrialIndex();
-        int timeStep   = getTimeStep();
-
-        JamLogger.info("TRIAL: %4d; STEP: %5d; FITNESS: %.4f", getTrialIndex(), getTimeStep(), meanFitness);
+        JamLogger.info("TRIAL: %4d; STEP: %5d; FITNESS: %.4f", getTrialIndex(), getTimeStep(), getMeanFitness());
     }
 
     private boolean isSnapshotStep() {
@@ -324,7 +222,7 @@ public abstract class MoranDriver extends DiscreteTimeSimulation {
 
     private void writeRuntimeProperties() {
         PrintWriter writer = openWriter(PROPERTY_FILE_NAME);
-        Map<String, String> properties = JamProperties.filter("jam.", "tumor.");
+        Map<String, String> properties = JamProperties.filter("jam.", "moran.");
 
         for (Map.Entry<String, String> entry : properties.entrySet())
             writer.println(entry.getKey() + " = " + entry.getValue());
@@ -337,28 +235,12 @@ public abstract class MoranDriver extends DiscreteTimeSimulation {
     }
 
     @Override protected void initializeTrial() {
-        space = createSpace();
-
-        resetTimeClock();
-        assignMeanFitness();
+        process = MoranProcess.initialize(createSpace());
         //ReportManager.global().initializeTrial();
     }
 
-    private void resetTimeClock() {
-        timeClock = 0.0;
-    }
-
-    private void assignMeanFitness() {
-        meanFitness = 0.0;
-
-        for (Cell cell : space)
-            meanFitness += cell.getFitness();
-
-        meanFitness /= space.size();
-    }
-
     @Override protected boolean continueTrial() {
-        return (getTimeStep() < maxStepCount) && (meanFitness < fitnessThreshold);
+        return (getTimeStep() < maxStepCount) && fitnessRange.contains(getMeanFitness());
     }
 
     @Override protected void advanceTrial() {
@@ -369,8 +251,8 @@ public abstract class MoranDriver extends DiscreteTimeSimulation {
         // execute the selection/death/division cycle once for each
         // cell in the population.
         //
-        for (int cycleIndex = 0; cycleIndex < space.size(); ++cycleIndex)
-            executeCellCycle();
+        for (int cycleIndex = 0; cycleIndex < viewSpace().size(); ++cycleIndex)
+            process.executeCellCycle();
     }
 
     @Override protected void finalizeTrial() {
