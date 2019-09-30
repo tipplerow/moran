@@ -12,22 +12,19 @@ import moran.cell.Cell;
 final class LatticeSpace extends Space {
     private final Lattice<Cell> lattice;
 
-    private LatticeSpace(Collection<Cell> cells, Lattice<Cell> lattice) {
-        super(cells);
+    private LatticeSpace(Lattice<Cell> lattice) {
+        super(lattice.listOccupants());
         this.lattice = lattice;
     }
 
-    static LatticeSpace create(Collection<Cell> cells, Lattice<Cell> lattice) {
+    static LatticeSpace create(Lattice<Cell> lattice) {
         //
         // The lattice must be completely occupied by the cells...
         //
         if (!lattice.isFull())
             throw new IllegalArgumentException("The lattice must be completely full.");
 
-        if (!lattice.containsAll(cells))
-            throw new IllegalArgumentException("The lattice must contain all cells.");
-
-        return new LatticeSpace(cells, lattice);
+        return new LatticeSpace(lattice);
     }
 
     @Override public List<Cell> getNeighbors(Cell cell) {

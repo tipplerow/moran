@@ -31,7 +31,7 @@ public class Population implements PopulationView {
      *
      * @throws IllegalArgumentException unless all cells are unique.
      */
-    public Population(Collection<Cell> cells) {
+    public Population(Collection<? extends Cell> cells) {
         this.cellList = new ArrayList<Cell>(cells);
         this.indexMap = new HashMap<Cell, Integer>(cells.size());
 

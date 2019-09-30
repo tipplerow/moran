@@ -11,11 +11,11 @@ import jam.math.Point1D;
 import moran.cell.Cell;
 
 final class PointSpace extends Space {
-    private PointSpace(Collection<Cell> cells) {
+    private PointSpace(Collection<? extends Cell> cells) {
         super(cells);
     }
 
-    static PointSpace create(Collection<Cell> cells) {
+    static PointSpace create(Collection<? extends Cell> cells) {
         return new PointSpace(cells);
     }
 

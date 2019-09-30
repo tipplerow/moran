@@ -76,7 +76,7 @@ public abstract class ABCell implements Cell {
         }
 
         @Override public double getFitness() {
-            return ABConfig.global().getFitnessRatio();
+            return ABConfig.TYPE_A_FITNESS;
         }
 
         @Override public ABType type() {

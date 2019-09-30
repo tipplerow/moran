@@ -134,9 +134,10 @@ public final class MoranProcess {
         double time = ExponentialDistribution.sample(sum, random);
 
         // To make the elapsed time independent of the population size
-        // and the coordination number of the lattice, we rescale the
-        // elapsed time by both quantities.
-        return time / (neighborFit.length * space.size());
+        // and the coordination number of the lattice, we must rescale
+        // the elapsed time by (C / N), where "C" is the coordination
+        // number and "N" is the population size.
+        return neighborFit.length * time / space.size();
     }
 
     private Cell selectNeighbor(List<Cell> neighborCells, double[] neighborFit) {
@@ -150,6 +151,15 @@ public final class MoranProcess {
 
     private void updateMeanFitness(Cell deadCell, Cell daughter) {
         meanFitness += (daughter.getFitness() - deadCell.getFitness()) / space.size();
+    }
+
+    /**
+     * Executes one cycle of cell death and division for each member
+     * of the cell population.
+     */
+    public void executeTimeStep() {
+        for (int cycle = 0; cycle < space.size(); ++ cycle)
+            executeCellCycle();
     }
 
     /**
