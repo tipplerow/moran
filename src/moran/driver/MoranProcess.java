@@ -128,16 +128,18 @@ public final class MoranProcess {
         //
         // Each division event is modeled as a Poisson process, so we
         // sample the elapased time from an exponential distribution
-        // with rate parameter equal to the sum of the fitness...
+        // with a rate parameter equal to the average fitness of the
+        // neighbors that may divide.
         //
-        double sum  = VectorUtil.sum(neighborFit);
-        double time = ExponentialDistribution.sample(sum, random);
+        double rate = VectorUtil.mean(neighborFit);
+        double time = ExponentialDistribution.sample(rate, random);
 
-        // To make the elapsed time independent of the population size
-        // and the coordination number of the lattice, we must rescale
-        // the elapsed time by (C / N), where "C" is the coordination
-        // number and "N" is the population size.
-        return neighborFit.length * time / space.size();
+        // At each discrete time step, we execute N cell cycles (where
+        // N is the population size), so on average each cell will die
+        // once during a time step.  To make the elapsed time over a
+        // single discrete time step independent of the population
+        // size, we must divide the sampled time the population size.
+        return time / space.size();
     }
 
     private Cell selectNeighbor(List<Cell> neighborCells, double[] neighborFit) {
