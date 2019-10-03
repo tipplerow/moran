@@ -7,7 +7,23 @@ import moran.cell.Genotype;
 /**
  * Defines the cell types in the {@code A/B} Moran model.
  */
-public abstract class ABCell implements Cell {
+public abstract class ABCell extends Cell {
+    /**
+     * Creates a new founder {@code A/B} cell.
+     */
+    protected ABCell() {
+        super();
+    }
+
+    /**
+     * Creates a new daughter {@code A/B} cell.
+     *
+     * @param parent the parent cell.
+     */
+    protected ABCell(ABCell parent) {
+        super(parent);
+    }
+
     /**
      * Creates a new cell of a given type.
      *
@@ -53,18 +69,20 @@ public abstract class ABCell implements Cell {
      */
     public abstract ABType type();
 
-    @Override public String toString() {
-        return "Cell(" + type() + ")";
-    }
-
     private static final class TypeA extends ABCell {
-        private TypeA() {}
+        private TypeA() {
+            super();
+        }
+
+        private TypeA(TypeA parent) {
+            super(parent);
+        }
 
         @Override public ABCell divide() {
             if (ABConfig.global().getMutationRate().accept())
-                return new TypeB();
+                return new TypeB(this);
             else
-                return new TypeA();
+                return new TypeA(this);
         }
 
         @Override public ABGenotype getGenotype() {
@@ -82,13 +100,23 @@ public abstract class ABCell implements Cell {
         @Override public ABType type() {
             return ABType.A;
         }
+
+        @Override public String toString() {
+            return "A(" + getIndex() + ")";
+        }
     }
 
     private static final class TypeB extends ABCell {
-        private TypeB() {}
+        private TypeB() {
+            super();
+        }
+
+        private TypeB(ABCell parent) {
+            super(parent);
+        }
 
         @Override public ABCell divide() {
-            return new TypeB();
+            return new TypeB(this);
         }
 
         @Override public ABGenotype getGenotype() {
@@ -105,6 +133,10 @@ public abstract class ABCell implements Cell {
 
         @Override public ABType type() {
             return ABType.B;
+        }
+
+        @Override public String toString() {
+            return "B(" + getIndex() + ")";
         }
     }
 }
