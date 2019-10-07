@@ -1,0 +1,8 @@
+jam.math.randomSeed = 20191006
+moran.ab.fitnessRatio = 1.1
+moran.ab.mutationRate = 1.0E-03
+moran.driver.fitnessRange = [1.0, 1.0999]
+moran.driver.maxStepCount = 1000
+moran.driver.trialTarget = 5
+moran.report.runMeanFitnessReport = true
+moran.space.structure = SQUARE; 1.0; 100, 100
