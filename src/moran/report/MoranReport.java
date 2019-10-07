@@ -1,6 +1,12 @@
 
 package moran.report;
 
+import java.text.DecimalFormat;
+
+import jam.math.Point;
+import jam.report.LineBuilder;
+
+import moran.cell.Cell;
 import moran.driver.MoranDriver;
 import moran.space.SpaceView;
 
@@ -19,6 +25,11 @@ public abstract class MoranReport {
     protected MoranReport(MoranDriver driver) {
         this.driver = driver;
     }
+
+    /**
+     * Format for spatial coordinates in reports.
+     */
+    public static final DecimalFormat COORD_FORMAT = new DecimalFormat("#0.0###");
 
     /**
      * Initializes this report at the start of a new simulation.
@@ -44,6 +55,65 @@ public abstract class MoranReport {
      * Reports the results of the completed simulation.
      */
     public abstract void finalizeSimulation();
+
+    /**
+     * Returns the header text for cellular coordinates in report
+     * files.
+     *
+     * @return the header text for cellular coordinates in report
+     * files.
+     */
+    public String coordHeader() {
+        //
+        // Obtain the dimensionality from the coordinate of the first
+        // cell...
+        //
+        Cell cell = viewSpace().list().get(0);
+        Point point = viewSpace().locate(cell);
+
+        switch (point.dimensionality()) {
+        case 1:
+            return "x";
+
+        case 2:
+            return "x,y";
+
+        case 3:
+            return "x,y,z";
+
+        default:
+            throw new IllegalStateException("Unknown dimensionality.");
+        }
+    }
+
+    /**
+     * Formats cellular coordinates for output in a report file.
+     *
+     * @param point the point to format.
+     *
+     * @return a formatted string containing the coordinates of the
+     * specified point.
+     */
+    public static String formatCoord(Point point) {
+        LineBuilder builder = LineBuilder.csv();
+
+        for (int k = 0; k < point.dimensionality(); ++k)
+            builder.append(point.coord(k), COORD_FORMAT);
+
+        return builder.toString();
+    }
+
+    /**
+     * Formats cellular coordinates for output in a report file.
+     *
+     * @param cell the cell of interest.
+     *
+     * @return a formatted string containing the coordinates of the
+     * specified cell.
+     */
+    public String formatCoord(Cell cell) {
+        return formatCoord(viewSpace().locate(cell));
+    }
 
     /**
      * Returns the global driver application.
