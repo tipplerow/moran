@@ -3,6 +3,8 @@ package moran.driver;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import jam.app.JamLogger;
@@ -12,6 +14,8 @@ import jam.math.IntRange;
 import jam.sim.DiscreteTimeSimulation;
 
 import moran.cell.Cell;
+import moran.report.MeanFitnessReport;
+import moran.report.MoranReport;
 import moran.space.Space;
 import moran.space.SpaceView;
 
@@ -25,6 +29,9 @@ public abstract class MoranDriver extends DiscreteTimeSimulation {
     private final int snapInterval;
 
     private final DoubleRange fitnessRange;
+
+    // All reports to run...
+    private final List<MoranReport> reports = new ArrayList<MoranReport>();
 
     // The active Moran process for the current simulation trial...
     private MoranProcess process;
@@ -44,6 +51,8 @@ public abstract class MoranDriver extends DiscreteTimeSimulation {
         this.maxStepCount = resolveMaxStepCount();
         this.snapInterval = resolveSnapInterval();
         this.fitnessRange = resolveFitnessRange();
+
+        registerReports();
     }
 
     private static int resolveTrialTarget() {
@@ -63,6 +72,14 @@ public abstract class MoranDriver extends DiscreteTimeSimulation {
             return DoubleRange.parse(JamProperties.getRequired(FITNESS_RANGE_PROPERTY));
         else
             return DoubleRange.POSITIVE;
+    }
+
+    private void registerReports() {
+        //
+        // Register the reports common to most applications...
+        //
+        if (MeanFitnessReport.reportRequested())
+            registerReport(MeanFitnessReport.create(this));
     }
 
     /**
@@ -180,6 +197,19 @@ public abstract class MoranDriver extends DiscreteTimeSimulation {
     }
 
     /**
+     * Registers a report to run.
+     *
+     * <p>Subclasses should register reports in their constructor,
+     * prior to the initialization of the simulation, to ensure that
+     * the reports are properly initialized.
+     *
+     * @param report the report to run.
+     */
+    protected final void registerReport(MoranReport report) {
+        reports.add(report);
+    }
+
+    /**
      * Records the new state of the simulation system after a time
      * step has been executed.
      *
@@ -188,6 +218,9 @@ public abstract class MoranDriver extends DiscreteTimeSimulation {
      */
     protected void recordStep() {
         consoleLogStep();
+
+        for (MoranReport report : reports)
+            report.processStep();
 
         if (isSnapshotStep())
             recordSnapshot(getSnapshotDir());
@@ -218,6 +251,9 @@ public abstract class MoranDriver extends DiscreteTimeSimulation {
 
     @Override protected void initializeSimulation() {
         writeRuntimeProperties();
+
+        for (MoranReport report : reports)
+            report.initializeSimulation();
     }
 
     private void writeRuntimeProperties() {
@@ -231,12 +267,17 @@ public abstract class MoranDriver extends DiscreteTimeSimulation {
     }
 
     @Override protected void finalizeSimulation() {
+        for (MoranReport report : reports)
+            report.finalizeSimulation();
+
         autoClose();
     }
 
     @Override protected void initializeTrial() {
         process = MoranProcess.initialize(createSpace());
-        //ReportManager.global().initializeTrial();
+
+        for (MoranReport report : reports)
+            report.initializeTrial();
     }
 
     @Override protected boolean continueTrial() {
@@ -244,19 +285,14 @@ public abstract class MoranDriver extends DiscreteTimeSimulation {
     }
 
     @Override protected void advanceTrial() {
-        //
-        // For the simulation time to be independent of the sample
-        // size, each cell in the population must have a chance (on
-        // average) to die or divide in each discrete step, so we
-        // execute the selection/death/division cycle once for each
-        // cell in the population.
-        //
-        for (int cycleIndex = 0; cycleIndex < viewSpace().size(); ++cycleIndex)
-            process.executeCellCycle();
+        process.executeTimeStep();
+        recordStep();
     }
 
     @Override protected void finalizeTrial() {
         recordSnapshot(getReportDir());
-        //ReportManager.global().finalizeTrial();
+
+        for (MoranReport report : reports)
+            report.finalizeTrial();
     }
 }

@@ -28,6 +28,35 @@ public abstract class MoranProcessTestBase extends NumericTestBase {
     protected abstract Space createSpace();
 
     /**
+     * Executes the Moran process.
+     *
+     * @param stepCount the number of steps to execute.
+     *
+     * @param verbose whether to log the intermediate steps of the
+     * simulation.
+     *
+     * @return the executed Moran process.
+     */
+    protected MoranProcess runProcess(int stepCount, boolean verbose) {
+        MoranProcess process =
+            MoranProcess.initialize(createSpace());
+
+        for (int stepIndex = 0; stepIndex < stepCount; ++stepIndex) {
+            process.executeTimeStep();
+
+            if (verbose)
+                logProcess(process, stepIndex);
+        }
+
+        return process;
+    }
+
+    private void logProcess(MoranProcess process, int stepIndex) {
+        System.out.println(String.format("STEP: %5d; CLOCK: %10.4f; FITNESS: %6.4f",
+                                         stepIndex, process.getTimeClock(), process.getMeanFitness()));
+    }
+
+    /**
      * Executes the Moran process and tests the results.
      *
      * @param stepCount the number of steps to execute.
@@ -46,21 +75,9 @@ public abstract class MoranProcessTestBase extends NumericTestBase {
                            double  meanFitness,
                            boolean verbose) {
         MoranProcess process =
-            MoranProcess.initialize(createSpace());
-
-        for (int stepIndex = 0; stepIndex < stepCount; ++stepIndex) {
-            process.executeTimeStep();
-
-            if (verbose)
-                logProcess(process, stepIndex);
-        }
+            runProcess(stepCount, verbose);
 
         assertDouble(timeClock, process.getTimeClock());
         assertDouble(meanFitness, process.getMeanFitness());
-    }
-
-    private void logProcess(MoranProcess process, int stepIndex) {
-        System.out.println(String.format("STEP: %5d; CLOCK: %10.4f; FITNESS: %6.4f",
-                                         stepIndex, process.getTimeClock(), process.getMeanFitness()));
     }
 }

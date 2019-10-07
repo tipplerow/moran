@@ -21,6 +21,34 @@ import moran.cell.Population;
  */
 public abstract class Space extends Population implements SpaceView {
     /**
+     * Name of the system property that defines the global spatial
+     * structure.
+     *
+     * <p>The system property may take one of two forms.  To define a
+     * zero-dimensional point space, use the format {@code POINT; N},
+     * where {@code POINT} is the literal string and {@code N} is the
+     * number of cells in the space.  For a lattice space, use the
+     * format required by the {@code jam.bravais.Lattice} class.
+     */
+    public static final String STRUCTURE_PROPERTY = "moran.space.structure";
+
+    /**
+     * Creates the global space with a structure defined by system
+     * properties and fills it with occupants created by a factory.
+     *
+     * @param factory the source of new occupants for the space.
+     *
+     * @return the global space wiith the structure defined by system
+     * properties, filled with cells created by the given factory.
+     *
+     * @throws RuntimeException unless a valid structure property is
+     * set.
+     */
+    public static Space global(ObjectFactory<? extends Cell> factory) {
+        return GlobalSpace.create(factory);
+    }
+
+    /**
      * Creates a new space and populates it with a collection of
      * cells.
      *
