@@ -10,6 +10,7 @@ import static org.junit.Assert.*;
 public class SegmentCNGenotypeTest {
     static {
         System.setProperty(GenomeSegment.DEFINITION_FILE_PROPERTY, "data/test/test_segment.txt");
+        System.setProperty(SegmentCNGenotype.MAX_COPY_NUMBER_PROPERTY, "5");
     }
 
     private static final GenomeSegment P6  = GenomeSegment.instance("6p");
@@ -44,22 +45,22 @@ public class SegmentCNGenotypeTest {
         assertCN(SegmentCNGenotype.WILD_TYPE, 2, 2, 2);
     }
 
-    @Test public void testViewSegments() {
+    @Test public void testMaxCopyNumber() {
         SegmentCNGenotype genotype = SegmentCNGenotype.WILD_TYPE;
 
-        assertEquals(3, genotype.viewSegments().size());
+        assertEquals(5, SegmentCNGenotype.maxCopyNumber());
 
-        genotype = genotype.lose(P6);
-        genotype = genotype.lose(P6);
+        genotype = genotype.gain(P6);
+        genotype = genotype.gain(P6);
+        genotype = genotype.gain(P6);
 
-        assertEquals(2, genotype.viewSegments().size());
-        assertFalse(genotype.viewSegments().contains(P6));
-    }
+        assertCN(genotype, 5, 2, 2);
 
-    @Test public void testWildType() {
-        assertEquals(2, SegmentCNGenotype.WILD_TYPE.count(P6));
-        assertEquals(2, SegmentCNGenotype.WILD_TYPE.count(Q9));
-        assertEquals(2, SegmentCNGenotype.WILD_TYPE.count(P12));
+        genotype = genotype.gain(P6);
+        genotype = genotype.gain(P6);
+        genotype = genotype.gain(P6);
+
+        assertCN(genotype, 5, 2, 2);
     }
 
     @Test(expected = RuntimeException.class)

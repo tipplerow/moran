@@ -1,12 +1,9 @@
 
 package moran.segment;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.Arrays;
 
-import com.google.common.collect.LinkedHashMultiset;
-import com.google.common.collect.Multiset;
-
+import jam.app.JamProperties;
 import jam.lang.JamException;
 
 import moran.cell.Genotype;
@@ -21,11 +18,46 @@ import moran.cell.Genotype;
  * object remains unchanged.
  */
 public final class SegmentCNGenotype implements Genotype {
-    private final Multiset<GenomeSegment> copyNum;
+    //
+    // Copy number of each genome segment indexed by the genome
+    // segment ordinal index...
+    //
+    private final int[] copyNumbers;
 
-    private SegmentCNGenotype(Multiset<GenomeSegment> copyNum) {
-        this.copyNum = copyNum;
+    private static final int maxCopyNumber = resolveMaxCopyNumber();
+
+    private static int resolveMaxCopyNumber() {
+        int max = JamProperties.getOptionalInt(MAX_COPY_NUMBER_PROPERTY,
+                                               MAX_COPY_NUMBER_DEFAULT);
+
+        if (max < 2)
+            throw new IllegalStateException("The maximum copy number must be at least two.");
+
+        return max;
     }
+
+    private SegmentCNGenotype(int[] copyNumbers) {
+        this.copyNumbers = copyNumbers;
+    }
+
+    private SegmentCNGenotype deepCopy() {
+        return new SegmentCNGenotype(copyCopyNumbers());
+    }
+
+    private int[] copyCopyNumbers() {
+        return Arrays.copyOf(copyNumbers, copyNumbers.length);
+    }
+
+    /**
+     * Name of the system property that defines the maximum allowed
+     * copy number (must be at least two).
+     */
+    public static final String MAX_COPY_NUMBER_PROPERTY = "moran.segment.maxCopyNumber";
+
+    /**
+     * Default value for the maximum allowed copy number.
+     */
+    public static final int MAX_COPY_NUMBER_DEFAULT = 8;
 
     /**
      * The wild-type genotype with {@code CN = 2} for all genome
@@ -33,30 +65,22 @@ public final class SegmentCNGenotype implements Genotype {
      */
     public static final SegmentCNGenotype WILD_TYPE = createWildType();
 
-    /**
-     * Copy number for wild-type (unmutated) genomes.
-     */
-    public static final int WILD_TYPE_COPY_NUMBER = 2;
-
     private static SegmentCNGenotype createWildType() {
-        Multiset<GenomeSegment> copyNum = LinkedHashMultiset.create();
+        int[] wild = new int[GenomeSegment.count()];
+        Arrays.fill(wild, SegmentCN.WILD_TYPE_COPY_NUMBER);
 
-        for (GenomeSegment segment : GenomeSegment.list())
-            copyNum.setCount(segment, WILD_TYPE_COPY_NUMBER);
-
-        return new SegmentCNGenotype(copyNum);
+        return new SegmentCNGenotype(wild);
     }
 
     /**
-     * Identifies genome segments in this genotype.
+     * Returns the maximum allowed copy number: Copy number gains
+     * for segments already at this copy number do not result in
+     * any changes to the genotype.
      *
-     * @param segment the segment of interest.
-     *
-     * @return {@code true} iff this genotype contains the specified
-     * genome segment with a positive copy number.
+     * @return the maximum allowed copy number.
      */
-    public boolean contains(GenomeSegment segment) {
-        return copyNum.count(segment) > 0;
+    public static int maxCopyNumber() {
+        return maxCopyNumber;
     }
 
     /**
@@ -64,11 +88,18 @@ public final class SegmentCNGenotype implements Genotype {
      *
      * @param segment the segment of interest.
      *
-     * @return the copy number for the specified genome segment
-     * ({@code 0} if this genotype does not contain the segment).
+     * @return the copy number for the specified genome segment.
      */
     public int count(GenomeSegment segment) {
-        return copyNum.count(segment);
+        return copyNumbers[indexOf(segment)];
+    }
+
+    private static int indexOf(GenomeSegment segment) {
+        //
+        // Need to cast the (long) segment index to (int) to avoid
+        // lossy conversion errors ...
+        //
+        return (int) segment.getIndex();
     }
 
     /**
@@ -90,73 +121,64 @@ public final class SegmentCNGenotype implements Genotype {
      * this genotype is unchanged.
      */
     public SegmentCNGenotype doubleWG() {
-        Multiset<GenomeSegment> newCopyNum = newCopy();
+        int[] newCopyNumbers = copyCopyNumbers();
 
-        for (GenomeSegment segment : newCopyNum.elementSet())
-            newCopyNum.setCount(segment, 2 * newCopyNum.count(segment));
+        for (int index = 0; index < newCopyNumbers.length; ++index)
+            newCopyNumbers[index] *= 2;
 
-        return new SegmentCNGenotype(newCopyNum);
-    }
-
-    private Multiset<GenomeSegment> newCopy() {
-        return LinkedHashMultiset.create(copyNum);
+        return new SegmentCNGenotype(newCopyNumbers);
     }
 
     /**
      * Returns a new genotype with one additional copy of a genome
      * segment; this genotype is unchanged.
      *
+     * <p>If the specified segment already has a copy number equal to
+     * the maximum allowed, its copy number will remain unchanged.
+     *
      * @param segment the segment to increase in copy number.
      *
      * @return a new genotype with one additional copy of the
-     * specified genome segment.
+     * specified genome segment (unless the copy number for the
+     * segment is already equal to the maximum allowed, in which
+     * case the copy number will remain unchanged).
      *
-     * @throws RuntimeException unless this genotype already contains
-     * the segment (with positive copy number).
+     * @throws RuntimeException if the segment has copy number zero.
      */
     public SegmentCNGenotype gain(GenomeSegment segment) {
-        require(segment);
+        if (count(segment) >= maxCopyNumber)
+            return this;
 
-        Multiset<GenomeSegment> newCopyNum = newCopy();
-        newCopyNum.add(segment);
+        validatePositiveCopyNumber(segment);
 
-        return new SegmentCNGenotype(newCopyNum);
+        int[] newCopyNumbers = copyCopyNumbers();
+        ++newCopyNumbers[indexOf(segment)];
+
+        return new SegmentCNGenotype(newCopyNumbers);
     }
 
-    private void require(GenomeSegment segment) {
-        if (!contains(segment))
-            throw JamException.runtime("Genotype does not contain segment [%s].", segment.getKey());
+    private void validatePositiveCopyNumber(GenomeSegment segment) {
+        if (count(segment) < 1)
+            throw new IllegalStateException("Segment [" + segment + "] has copy number zero.");
     }
 
     /**
-     * Returns a new genotype with one additional copy of a genome
-     * segment; this genotype is unchanged.
+     * Returns a new genotype with one fewer copy of a genome segment;
+     * this genotype is unchanged.
      *
-     * @param segment the segment to increase in copy number.
+     * @param segment the segment to decrease in copy number.
      *
-     * @return a new genotype with one additional copy of the
-     * specified genome segment.
+     * @return a new genotype with one fewer copy of the specified
+     * genome segment.
      *
-     * @throws RuntimeException unless this genotype contains the
-     * segment (with positive copy number).
+     * @throws RuntimeException if the segment has copy number zero.
      */
     public SegmentCNGenotype lose(GenomeSegment segment) {
-        require(segment);
+        validatePositiveCopyNumber(segment);
 
-        Multiset<GenomeSegment> newCopyNum = newCopy();
-        newCopyNum.remove(segment);
+        int[] newCopyNumbers = copyCopyNumbers();
+        --newCopyNumbers[indexOf(segment)];
 
-        return new SegmentCNGenotype(newCopyNum);
-    }
-
-    /**
-     * Returns a read-only view of the genome segments contained in
-     * this genotype (with positive copy number).
-     *
-     * @return a read-only view of the genome segments contained in
-     * this genotype (with positive copy number).
-     */
-    public Collection<GenomeSegment> viewSegments() {
-        return Collections.unmodifiableCollection(copyNum.elementSet());
+        return new SegmentCNGenotype(newCopyNumbers);
     }
 }

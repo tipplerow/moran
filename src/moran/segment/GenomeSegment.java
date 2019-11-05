@@ -24,6 +24,7 @@ public final class GenomeSegment extends Ordinal {
 
     private GenomeSegment(String key, String desc) {
         super(ordinalIndex.next());
+
         this.key = key;
         this.desc = desc;
     }
@@ -62,7 +63,7 @@ public final class GenomeSegment extends Ordinal {
     /**
      * Retrieves a genome segment by ordinal index.
      *
-     * @param key the key string for the segment of interest.
+     * @param index the ordinal index for the segment of interest.
      *
      * @return the genome segment with the specified index.
      *
