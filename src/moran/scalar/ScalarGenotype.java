@@ -2,16 +2,15 @@
 package moran.scalar;
 
 import moran.cell.Genotype;
-import moran.cell.Phenotype;
 
 import jam.lang.JamException;
 import jam.math.DoubleComparator;
 
 /**
- * Implements a genotype and phenotype that are completely defined by
- * a single scalar fitness.
+ * Implements a genotype that is completely defined by a single scalar
+ * fitness.
  */
-public final class ScalarGenotype implements Genotype, Phenotype {
+public final class ScalarGenotype implements Genotype {
     private final double fitness;
 
     private ScalarGenotype(double fitness) {
@@ -43,11 +42,12 @@ public final class ScalarGenotype implements Genotype, Phenotype {
             return new ScalarGenotype(fitness);
     }
 
-    @Override public Phenotype getPhenotype() {
-        return this;
-    }
-
-    @Override public double getFitness() {
+    /**
+     * Returns the scalar fitness for this genotype.
+     *
+     * @return the scalar fitness for this genotype.
+     */
+    public double getFitness() {
         return fitness;
     }
 }

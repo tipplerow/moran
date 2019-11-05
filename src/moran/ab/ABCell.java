@@ -7,29 +7,20 @@ import moran.cell.Genotype;
 /**
  * Defines the cell types in the {@code A/B} Moran model.
  */
-public abstract class ABCell extends Cell {
-    /**
-     * Creates a new founder {@code A/B} cell.
-     */
-    protected ABCell() {
-        super();
-    }
+public final class ABCell extends Cell {
+    private final ABGenotype genotype;
 
-    /**
-     * Creates a new daughter {@code A/B} cell.
-     *
-     * @param parent the parent cell.
-     */
-    protected ABCell(ABCell parent) {
+    private ABCell(ABCell parent, ABGenotype genotype) {
         super(parent);
+        this.genotype = genotype;
     }
 
     /**
-     * Creates a new cell of a given type.
+     * Creates a new founder cell of a given type.
      *
      * @param type the enumerated cell type.
      *
-     * @return a new cell of the given type.
+     * @return a new founder cell of the given type.
      */
     public static ABCell create(ABType type) {
         switch (type) {
@@ -45,21 +36,39 @@ public abstract class ABCell extends Cell {
     }
         
     /**
-     * Creates a new cell of type {@code A}.
+     * Creates a new founder cell of type {@code A}.
      *
-     * @return a new cell of type {@code A}.
+     * @return a new founder cell of type {@code A}.
      */
     public static ABCell newA() {
-        return new TypeA();
+        return new ABCell(null, ABGenotype.A);
     }
 
     /**
-     * Creates a new cell of type {@code B}.
+     * Creates a new founder cell of type {@code B}.
      *
-     * @return a new cell of type {@code B}.
+     * @return a new founder cell of type {@code B}.
      */
     public static ABCell newB() {
-        return new TypeB();
+        return new ABCell(null, ABGenotype.B);
+    }
+
+    /**
+     * Identifies cells of type {@code A}.
+     *
+     * @return {@code true} iff this is a cell of type {@code A}.
+     */
+    public boolean isA() {
+        return genotype.isA();
+    }
+
+    /**
+     * Identifies cells of type {@code B}.
+     *
+     * @return {@code true} iff this is a cell of type {@code B}.
+     */
+    public boolean isB() {
+        return genotype.isA();
     }
 
     /**
@@ -67,76 +76,40 @@ public abstract class ABCell extends Cell {
      *
      * @return the enumerated type of this cell.
      */
-    public abstract ABType type();
+    public ABType type() {
+        return genotype.type();
+    }
 
-    private static final class TypeA extends ABCell {
-        private TypeA() {
-            super();
+    @Override public ABCell divide() {
+        return new ABCell(this, daughterGenotype());
+    }
+
+    private ABGenotype daughterGenotype() {
+        if (isB()) {
+            //
+            // Cells of type B never mutate, cells of type A mutate...
+            //
+            return ABGenotype.B;
         }
-
-        private TypeA(TypeA parent) {
-            super(parent);
+        else if (ABConfig.global().getMutationRate().accept()) {
+            //
+            // Cell of type A mutates...
+            //
+            return ABGenotype.B;
         }
-
-        @Override public ABCell divide() {
-            if (ABConfig.global().getMutationRate().accept())
-                return new TypeB(this);
-            else
-                return new TypeA(this);
-        }
-
-        @Override public ABGenotype getGenotype() {
+        else {
+            //
+            // Cell of type A divides without mutation...
+            //
             return ABGenotype.A;
-        }
-
-        @Override public ABGenotype getPhenotype() {
-            return ABGenotype.A;
-        }
-
-        @Override public double getFitness() {
-            return ABConfig.TYPE_A_FITNESS;
-        }
-
-        @Override public ABType type() {
-            return ABType.A;
-        }
-
-        @Override public String toString() {
-            return "A(" + getIndex() + ")";
         }
     }
 
-    private static final class TypeB extends ABCell {
-        private TypeB() {
-            super();
-        }
+    @Override public ABGenotype getGenotype() {
+        return genotype;
+    }
 
-        private TypeB(ABCell parent) {
-            super(parent);
-        }
-
-        @Override public ABCell divide() {
-            return new TypeB(this);
-        }
-
-        @Override public ABGenotype getGenotype() {
-            return ABGenotype.B;
-        }
-
-        @Override public ABGenotype getPhenotype() {
-            return ABGenotype.B;
-        }
-
-        @Override public double getFitness() {
-            return ABConfig.global().getFitnessRatio();
-        }
-
-        @Override public ABType type() {
-            return ABType.B;
-        }
-
-        @Override public String toString() {
-            return "B(" + getIndex() + ")";
-        }
+    @Override public String toString() {
+        return genotype.type().name() + "(" + getIndex() + ")";
     }
 }

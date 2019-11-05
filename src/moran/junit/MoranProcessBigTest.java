@@ -4,6 +4,7 @@ package moran.junit;
 import jam.bravais.Lattice;
 
 import moran.ab.ABConfig;
+import moran.ab.ABPhenotype;
 import moran.ab.ABType;
 import moran.cell.Cell;
 import moran.space.Space;
@@ -33,6 +34,10 @@ public class MoranProcessBigTest extends MoranProcessTestBase {
         lattice.fill(ABType.A.objectFactory());
 
         return Space.lattice(lattice);
+    }
+
+    @Override protected ABPhenotype createPhenotype() {
+        return ABPhenotype.INSTANCE;
     }
 
     public static void main(String[] args) {

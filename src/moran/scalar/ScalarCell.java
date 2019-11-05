@@ -40,6 +40,6 @@ public class ScalarCell extends Cell {
     }
 
     @Override public String toString() {
-        return "ScalarCell(" + getFitness() + ")";
+        return "ScalarCell(" + genotype.getFitness() + ")";
     }
 }

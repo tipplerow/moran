@@ -3,6 +3,7 @@ package moran.junit;
 
 import jam.junit.NumericTestBase;
 
+import moran.cell.Phenotype;
 import moran.driver.MoranProcess;
 import moran.space.Space;
 
@@ -28,6 +29,13 @@ public abstract class MoranProcessTestBase extends NumericTestBase {
     protected abstract Space createSpace();
 
     /**
+     * Creates the governing cellular phenotype model.
+     *
+     * @return the governing cellular phenotype model.
+     */
+    protected abstract Phenotype createPhenotype();
+
+    /**
      * Executes the Moran process.
      *
      * @param stepCount the number of steps to execute.
@@ -39,7 +47,7 @@ public abstract class MoranProcessTestBase extends NumericTestBase {
      */
     protected MoranProcess runProcess(int stepCount, boolean verbose) {
         MoranProcess process =
-            MoranProcess.initialize(createSpace());
+            MoranProcess.initialize(createSpace(), createPhenotype());
 
         for (int stepIndex = 0; stepIndex < stepCount; ++stepIndex) {
             process.executeTimeStep();

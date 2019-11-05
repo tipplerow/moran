@@ -29,6 +29,10 @@ public final class ABDriver extends MoranDriver {
         return Space.global(ABFactory.A);
     }
 
+    @Override protected ABPhenotype createPhenotype() {
+        return ABPhenotype.INSTANCE;
+    }
+
     @Override protected void recordSnapshot(File snapshotDir) {
         // No-op...
     }

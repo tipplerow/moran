@@ -8,6 +8,7 @@ import jam.math.JamRandom;
 import jam.vector.VectorUtil;
 
 import moran.cell.Cell;
+import moran.cell.Phenotype;
 import moran.space.Space;
 import moran.space.SpaceView;
 
@@ -40,7 +41,10 @@ import moran.space.SpaceView;
  */
 public final class MoranProcess {
     // The cell space for the active simulation trial...
-    private Space space;
+    private final Space space;
+
+    // The governing phenotype model...
+    private final Phenotype phenotype;
 
     // The continuous (dimensionless) time elapsed in the active
     // simulation trial...
@@ -52,20 +56,26 @@ public final class MoranProcess {
     // The random number source...
     private final JamRandom random = JamRandom.global();
 
-    private MoranProcess(Space space) {
+    private MoranProcess(Space space, Phenotype phenotype) {
         this.space = space;
+        this.phenotype = phenotype;
+
         this.timeClock = 0.0;
-        this.meanFitness = computeMeanFitness(space);
+        this.meanFitness = computeMeanFitness();
     }
 
-    private static double computeMeanFitness(Space space) {
+    private double computeMeanFitness() {
         double meanFitness = 0.0;
 
         for (Cell cell : space)
-            meanFitness += cell.getFitness();
+            meanFitness += getFitness(cell);
 
         meanFitness /= space.size();
         return meanFitness;
+    }
+
+    private double getFitness(Cell cell) {
+        return phenotype.getFitness(cell);
     }
 
     /**
@@ -74,10 +84,12 @@ public final class MoranProcess {
      *
      * @param space the spatial structure of the cellular population.
      *
+     * @param phenotype the cellular fitness (phenotype) model.
+     *
      * @return the initialized Moran process.
      */
-    public static MoranProcess initialize(Space space) {
-        return new MoranProcess(space);
+    public static MoranProcess initialize(Space space, Phenotype phenotype) {
+        return new MoranProcess(space, phenotype);
     }
 
     /**
@@ -111,11 +123,11 @@ public final class MoranProcess {
         updateMeanFitness(deadCell, daughter);
     }
 
-    private static double[] getNeighborFitness(List<Cell> neighborCells) {
+    private double[] getNeighborFitness(List<Cell> neighborCells) {
         double[] neighborFit = new double[neighborCells.size()];
 
         for (int k = 0; k < neighborCells.size(); ++k)
-            neighborFit[k] = neighborCells.get(k).getFitness();
+            neighborFit[k] = getFitness(neighborCells.get(k));
 
         return neighborFit;
     }
@@ -152,7 +164,7 @@ public final class MoranProcess {
     }
 
     private void updateMeanFitness(Cell deadCell, Cell daughter) {
-        meanFitness += (daughter.getFitness() - deadCell.getFitness()) / space.size();
+        meanFitness += (getFitness(daughter) - getFitness(deadCell)) / space.size();
     }
 
     /**

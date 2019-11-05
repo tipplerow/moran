@@ -14,6 +14,7 @@ import jam.math.IntRange;
 import jam.sim.DiscreteTimeSimulation;
 
 import moran.cell.Cell;
+import moran.cell.Phenotype;
 import moran.report.MeanFitnessReport;
 import moran.report.MoranReport;
 import moran.space.Space;
@@ -125,6 +126,13 @@ public abstract class MoranDriver extends DiscreteTimeSimulation {
      * @return the initial cellular space for the next simulation trial.
      */
     protected abstract Space createSpace();
+
+    /**
+     * Creates the governing cellular fitness (phenotype) model.
+     *
+     * @return the governing cellular fitness (phenotype) model.
+     */
+    protected abstract Phenotype createPhenotype();
 
     /**
      * Writes snapshot reports for the most recently executed time
@@ -274,7 +282,7 @@ public abstract class MoranDriver extends DiscreteTimeSimulation {
     }
 
     @Override protected void initializeTrial() {
-        process = MoranProcess.initialize(createSpace());
+        process = MoranProcess.initialize(createSpace(), createPhenotype());
 
         for (MoranReport report : reports)
             report.initializeTrial();
