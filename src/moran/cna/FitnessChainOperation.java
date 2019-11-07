@@ -1,5 +1,5 @@
 
-package moran.segment;
+package moran.cna;
 
 /**
  * Defines the mathematical operations used to <em>cahin together</em>

@@ -3,7 +3,7 @@ package moran.junit;
 
 import jam.junit.NumericTestBase;
 
-import moran.segment.FitnessChainOperation;
+import moran.cna.FitnessChainOperation;
 
 import org.junit.*;
 import static org.junit.Assert.*;
