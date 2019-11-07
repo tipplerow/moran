@@ -91,15 +91,7 @@ public final class SegmentCNGenotype implements Genotype {
      * @return the copy number for the specified genome segment.
      */
     public int count(GenomeSegment segment) {
-        return copyNumbers[indexOf(segment)];
-    }
-
-    private static int indexOf(GenomeSegment segment) {
-        //
-        // Need to cast the (long) segment index to (int) to avoid
-        // lossy conversion errors ...
-        //
-        return (int) segment.getIndex();
+        return copyNumbers[segment.indexOf()];
     }
 
     /**
@@ -152,7 +144,7 @@ public final class SegmentCNGenotype implements Genotype {
         validatePositiveCopyNumber(segment);
 
         int[] newCopyNumbers = copyCopyNumbers();
-        ++newCopyNumbers[indexOf(segment)];
+        ++newCopyNumbers[segment.indexOf()];
 
         return new SegmentCNGenotype(newCopyNumbers);
     }
@@ -177,7 +169,7 @@ public final class SegmentCNGenotype implements Genotype {
         validatePositiveCopyNumber(segment);
 
         int[] newCopyNumbers = copyCopyNumbers();
-        --newCopyNumbers[indexOf(segment)];
+        --newCopyNumbers[segment.indexOf()];
 
         return new SegmentCNGenotype(newCopyNumbers);
     }

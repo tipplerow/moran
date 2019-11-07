@@ -61,6 +61,18 @@ public final class GenomeSegment extends Ordinal {
     }
 
     /**
+     * Returns the ordinal index of this genome segment cast to an
+     * {@code int} value (to avoid lossy conversion errors when it
+     * is used as array element index).
+     *
+     * @return the ordinal index of this genome segment cast to an
+     * {@code int} value.
+     */
+    public int indexOf() {
+        return (int) getIndex();
+    }
+
+    /**
      * Retrieves a genome segment by ordinal index.
      *
      * @param index the ordinal index for the segment of interest.
