@@ -16,6 +16,23 @@ import jam.lang.Ordinal;
 import jam.lang.OrdinalIndex;
 import jam.util.RegexUtil;
 
+/**
+ * Represents a segment of the genome that is tracked during a Moran
+ * simulation.
+ *
+ * <p><b>Definition file.</b> The genome segments are defined in a
+ * file specified by the {@code moran.segment.definitionFile} system
+ * property.  Each line of the file should contain the segment code
+ * and an optional description separated by a comma.  The segments may
+ * be whole chromosomes, chromosome arms, or smaller chromosome units.
+ * For example:
+ *
+ * <pre>
+   6p21, Contains HLA genes...loss may enable immune evasion
+   chr17, TP53 
+   9q, Many copy number gains observed
+ * </pre>
+ */
 public final class GenomeSegment extends Ordinal {
     private final String key;
     private final String desc;
