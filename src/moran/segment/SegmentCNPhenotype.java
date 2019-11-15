@@ -2,10 +2,8 @@
 package moran.segment;
 
 import jam.app.JamProperties;
-import jam.io.DataReader;
 import jam.matrix.JamMatrix;
 import jam.matrix.MatrixView;
-import jam.util.RegexUtil;
 
 import moran.cell.Genotype;
 import moran.cell.Phenotype;
@@ -153,9 +151,5 @@ public final class SegmentCNPhenotype implements Phenotype {
         // One column for each allowed copy number...
         //
         return SegmentCNGenotype.maxCopyNumber() + 1;
-    }
-
-    private static JamMatrix createZeroMatrix() {
-        return JamMatrix.zeros(rowCount(), colCount());
     }
 }

@@ -173,4 +173,21 @@ public final class SegmentCNGenotype implements Genotype {
 
         return new SegmentCNGenotype(newCopyNumbers);
     }
+
+    /**
+     * Ensures that a copy number lies within the valid closed range
+     * {@code [0, maxCopyNumber()]}.
+     *
+     * @param copyNumber the copy number to validate.
+     *
+     * @throws IllegalArgumentException if the copy number is outside
+     * of the valid range.
+     */
+    public static void validateCopyNumber(int copyNumber) {
+        if (copyNumber < 0)
+            throw new IllegalArgumentException("Negative copy number.");
+
+        if (copyNumber > maxCopyNumber)
+            throw new IllegalArgumentException("Copy number exceeds the maximum.");
+    }
 }
