@@ -1,0 +1,17 @@
+6p, 1, gain, 0.011
+6p, 2, gain, 0.022
+6p, 3, gain, 0.033
+
+6p, 1, loss, 0.11
+6p, 2, loss, 0.22
+6p, 3, loss, 0.33
+6p, 4, loss, 0.44
+
+9q, 1, gain, 0.055
+9q, 2, gain, 0.066
+9q, 3, gain, 0.077
+
+9q, 1, loss, 0.55
+9q, 2, loss, 0.66
+9q, 3, loss, 0.77
+9q, 4, loss, 0.88
