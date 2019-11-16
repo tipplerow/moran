@@ -39,7 +39,7 @@ final class ChainedMatrixLoader {
         String[] fields = RegexUtil.split(FitnessMatrixLoader.DELIM, line, 3);
 
         GenomeSegment segment = GenomeSegment.require(fields[0]);
-        CNEventType   cnaType = CNEventType.valueOf(fields[1].toUpperCase());
+        CNEventType   cnaType = CNEventType.instance(fields[1]);
         double        fitness = Double.parseDouble(fields[2]);
 
         // Unit fitness for the wild type...
