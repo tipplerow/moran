@@ -7,7 +7,7 @@ import jam.app.JamProperties;
 import jam.matrix.JamMatrix;
 import jam.util.RegexUtil;
 
-import moran.cna.CNEventType;
+import moran.cna.CNAType;
 import moran.cna.FitnessChainOperation;
 
 final class ChainedMatrixLoader {
@@ -39,7 +39,7 @@ final class ChainedMatrixLoader {
         String[] fields = RegexUtil.split(FitnessMatrixLoader.DELIM, line, 3);
 
         GenomeSegment segment = GenomeSegment.require(fields[0]);
-        CNEventType   cnaType = CNEventType.instance(fields[1]);
+        CNAType       cnaType = CNAType.instance(fields[1]);
         double        fitness = Double.parseDouble(fields[2]);
 
         // Unit fitness for the wild type...
@@ -56,7 +56,7 @@ final class ChainedMatrixLoader {
             break;
 
         default:
-            throw new IllegalStateException("Unknown event type.");
+            throw new IllegalStateException("Invalid event type.");
         }
     }
 

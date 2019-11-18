@@ -40,10 +40,6 @@ public final class SegmentCNGenotype implements Genotype {
         this.copyNumbers = copyNumbers;
     }
 
-    private SegmentCNGenotype deepCopy() {
-        return new SegmentCNGenotype(copyCopyNumbers());
-    }
-
     private int[] copyCopyNumbers() {
         return Arrays.copyOf(copyNumbers, copyNumbers.length);
     }

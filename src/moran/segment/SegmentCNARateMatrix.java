@@ -3,7 +3,7 @@ package moran.segment;
 
 import jam.math.Probability;
 
-import moran.cna.CNEventType;
+import moran.cna.CNAType;
 
 /**
  * Assembls the rates of copy number gains or losses into a matrix
@@ -14,10 +14,10 @@ public final class SegmentCNARateMatrix {
     // CNA rates stored in matrix form, using the index of genome
     // segment as the row index and copy number as the column index.
     //
-    private final CNEventType type;
+    private final CNAType type;
     private final Probability[][] rates;
 
-    private SegmentCNARateMatrix(CNEventType type) {
+    private SegmentCNARateMatrix(CNAType type) {
         this.type = type;
         this.rates = emptyMatrix();
 
@@ -55,7 +55,7 @@ public final class SegmentCNARateMatrix {
      *
      * @return a new rate matrix for the specified event type.
      */
-    public static SegmentCNARateMatrix create(CNEventType type) {
+    public static SegmentCNARateMatrix create(CNAType type) {
         return new SegmentCNARateMatrix(type);
     }
 
@@ -76,7 +76,7 @@ public final class SegmentCNARateMatrix {
      *
      * @return a new rate matrix for the specified event type.
      */
-    public static SegmentCNARateMatrix uniform(CNEventType type, Probability rate) {
+    public static SegmentCNARateMatrix uniform(CNAType type, Probability rate) {
         SegmentCNARateMatrix matrix = create(type);
 
         for (int irow = 0; irow < matrix.nrow(); ++irow)
@@ -111,7 +111,7 @@ public final class SegmentCNARateMatrix {
      *
      * @return the types of events described by this matrix.
      */
-    public CNEventType getType() {
+    public CNAType getType() {
         return type;
     }
 
@@ -126,7 +126,7 @@ public final class SegmentCNARateMatrix {
      * absorbing state.
      */
     public boolean isAbsorbing(int copyNum) {
-        return copyNum == 0 || (type.equals(CNEventType.GAIN) && copyNum == SegmentCNGenotype.maxCopyNumber());
+        return copyNum == 0 || (type.equals(CNAType.GAIN) && copyNum == SegmentCNGenotype.maxCopyNumber());
     }
 
     /**

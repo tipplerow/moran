@@ -2,10 +2,10 @@
 package moran.cna;
 
 /**
- * Enumerates the two copy number event types.
+ * Enumerates the copy number alteration (CNA) types.
  */
-public enum CNEventType {
-    GAIN, LOSS;
+public enum CNAType {
+    GAIN, LOSS, NONE;
 
     /**
      * Returns the event type represented by a case-insensitive
@@ -16,7 +16,7 @@ public enum CNEventType {
      * @return the event type represented by the input string (in
      * a case-insensitive manner).
      */
-    public static CNEventType instance(String s) {
+    public static CNAType instance(String s) {
         return valueOf(s.toUpperCase());
     }
 }

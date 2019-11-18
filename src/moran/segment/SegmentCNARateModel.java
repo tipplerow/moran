@@ -1,14 +1,16 @@
 
 package moran.segment;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jam.app.JamProperties;
 import jam.io.DataReader;
+import jam.math.EventSet;
 import jam.math.Probability;
 import jam.util.RegexUtil;
 
-import moran.cna.CNEventType;
+import moran.cna.CNAType;
 
 /**
  * Governs the rates at which copy number alterations (CNA) occur.
@@ -67,6 +69,15 @@ import moran.cna.CNEventType;
  *
  * <p><b>Whole genome doubling.</b> The rate of whole genome doubling
  * is specified by the system property {@code moran.segment.rateWGD}.
+ *
+ * <p><b>Exclusive events.</b> When simulating the possible mutations
+ * of a genotype, we first consider the probability of a whole-genome
+ * doubling event.  If that occurs, no other events are considered.
+ * If whole-genome doubling does not occur, we consider each genome
+ * segment independently.  Gains and losses are mutually exclusive
+ * within a segment (one or the other may occur but not both), but
+ * copy-number events may occur on multiple genome segments during
+ * a single cell division.
  */
 public final class SegmentCNARateModel {
     //
@@ -80,19 +91,24 @@ public final class SegmentCNARateModel {
     // Whole genome doubling rate...
     private final Probability rateWGD;
 
+    // Gain/loss event sets with genome segments providing the
+    // row indexes and copy number states the column indexes...
+    //private final List<List<EventSet<CNAType>>> eventSets;
+
     private static SegmentCNARateModel global = null;
 
     private SegmentCNARateModel(SegmentCNARateMatrix gainRates,
                                 SegmentCNARateMatrix lossRates) {
-        validateRates(gainRates, CNEventType.GAIN);
-        validateRates(lossRates, CNEventType.LOSS);
+        validateRates(gainRates, CNAType.GAIN);
+        validateRates(lossRates, CNAType.LOSS);
 
         this.rateWGD   = resolveRateWGD();
         this.gainRates = gainRates;
         this.lossRates = lossRates;
+        //this.eventSets = createEventSets();
     }
 
-    private static void validateRates(SegmentCNARateMatrix rates, CNEventType type) {
+    private static void validateRates(SegmentCNARateMatrix rates, CNAType type) {
         rates.validate();
 
         if (!rates.getType().equals(type))
@@ -173,8 +189,8 @@ public final class SegmentCNARateModel {
         Probability gainRate = Probability.parse(JamProperties.getRequired(GAIN_RATE_PROPERTY));
         Probability lossRate = Probability.parse(JamProperties.getRequired(LOSS_RATE_PROPERTY));
 
-        SegmentCNARateMatrix gainMatrix = SegmentCNARateMatrix.uniform(CNEventType.GAIN, gainRate);
-        SegmentCNARateMatrix lossMatrix = SegmentCNARateMatrix.uniform(CNEventType.LOSS, lossRate);
+        SegmentCNARateMatrix gainMatrix = SegmentCNARateMatrix.uniform(CNAType.GAIN, gainRate);
+        SegmentCNARateMatrix lossMatrix = SegmentCNARateMatrix.uniform(CNAType.LOSS, lossRate);
 
         return new SegmentCNARateModel(gainMatrix, lossMatrix);
     }
@@ -232,6 +248,32 @@ public final class SegmentCNARateModel {
         return rateWGD;
     }
 
+    /**
+     * Simulates the possible mutation of a genotype during cell
+     * division.
+     *
+     * @param parent the genotype of the parent cell.
+     *
+     * @return either a new daughter genotype (if one or more copy
+     * number changes occur) or the original parent genotype (if no
+     * copy number changes occur).
+     */
+    public SegmentCNGenotype mutate(SegmentCNGenotype parent) {
+        if (rateWGD.accept())
+            return parent.doubleWG();
+
+        SegmentCNGenotype daughter = parent;
+
+        for (GenomeSegment segment : GenomeSegment.list())
+            daughter = mutate(daughter, segment);
+
+        return daughter;
+    }
+
+    private SegmentCNGenotype mutate(SegmentCNGenotype parent, GenomeSegment segment) {
+        return null;
+    }
+
     // -------------------------------------------------------------- //
 
     private static final class RateLoader {
@@ -246,8 +288,8 @@ public final class SegmentCNARateModel {
 
         private RateLoader(String fileName) {
             this.fileName = fileName;
-            this.gainMatrix = SegmentCNARateMatrix.create(CNEventType.GAIN);
-            this.lossMatrix = SegmentCNARateMatrix.create(CNEventType.LOSS);
+            this.gainMatrix = SegmentCNARateMatrix.create(CNAType.GAIN);
+            this.lossMatrix = SegmentCNARateMatrix.create(CNAType.LOSS);
         }
 
         private static SegmentCNARateModel load(String fileName) {
@@ -287,17 +329,17 @@ public final class SegmentCNARateModel {
 
         private void parseSegmentSpecific(String[] fields) {
             GenomeSegment segment = GenomeSegment.require(fields[0]);
-            CNEventType   cnaType = CNEventType.instance(fields[1]);
+            CNAType       cnaType = CNAType.instance(fields[1]);
             Probability   rate    = Probability.parse(fields[2]);
 
             setRates(segment, cnaType, rate);
         }
 
-        private void setRates(GenomeSegment segment, CNEventType cnaType, Probability rate) {
+        private void setRates(GenomeSegment segment, CNAType cnaType, Probability rate) {
             setRates(matrixFor(cnaType), segment, rate);
         }
 
-        private SegmentCNARateMatrix matrixFor(CNEventType cnaType) {
+        private SegmentCNARateMatrix matrixFor(CNAType cnaType) {
             switch (cnaType) {
             case GAIN:
                 return gainMatrix;
@@ -306,7 +348,7 @@ public final class SegmentCNARateModel {
                 return lossMatrix;
 
             default:
-                throw new IllegalStateException("Unknown event type.");
+                throw new IllegalStateException("Invalid event type.");
             }
         }
 
@@ -324,7 +366,7 @@ public final class SegmentCNARateModel {
         private void parseSegmentAndCopyNumberSpecific(String[] fields) {
             GenomeSegment segment = GenomeSegment.require(fields[0]);
             int           copyNum = Integer.parseInt(fields[1]);
-            CNEventType   cnaType = CNEventType.instance(fields[2]);
+            CNAType       cnaType = CNAType.instance(fields[2]);
             Probability   rate    = Probability.parse(fields[3]);
 
             matrixFor(cnaType).setRate(segment, copyNum, rate);
