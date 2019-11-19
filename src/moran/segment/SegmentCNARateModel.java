@@ -93,7 +93,7 @@ public final class SegmentCNARateModel {
 
     // Gain/loss event sets with genome segments providing the
     // row indexes and copy number states the column indexes...
-    //private final List<List<EventSet<CNAType>>> eventSets;
+    private final SegmentCNASet eventSets;
 
     private static SegmentCNARateModel global = null;
 
@@ -105,7 +105,7 @@ public final class SegmentCNARateModel {
         this.rateWGD   = resolveRateWGD();
         this.gainRates = gainRates;
         this.lossRates = lossRates;
-        //this.eventSets = createEventSets();
+        this.eventSets = SegmentCNASet.create(rateWGD, gainRates, lossRates);
     }
 
     private static void validateRates(SegmentCNARateMatrix rates, CNAType type) {
@@ -196,6 +196,25 @@ public final class SegmentCNARateModel {
     }
 
     /**
+     * Returns the event set for a given genome segment and copy
+     * number.
+     *
+     * @param segment the genome segment of interest.
+     *
+     * @param copyNum the copy number of interest.
+     *
+     * @return the event set for the specified genome segment and copy
+     * number.
+     *
+     * @throws IllegalArgumentException if the copy number is outside
+     * of the valid range (less than zero or greater than the maximum
+     * number specified by the {@code SegmentCNGenotype} class).
+     */
+    public EventSet<CNAType> getEventSet(GenomeSegment segment, int copyNum) {
+        return eventSets.getEventSet(segment, copyNum);
+    }
+
+    /**
      * Returns the rate (probability per cell division) of copy-number
      * gains for a given genome segment and its current copy number.
      *
@@ -271,7 +290,26 @@ public final class SegmentCNARateModel {
     }
 
     private SegmentCNGenotype mutate(SegmentCNGenotype parent, GenomeSegment segment) {
-        return null;
+        CNAType cnaType = selectEvent(parent, segment);
+
+        switch (cnaType) {
+        case GAIN:
+            return parent.gain(segment);
+
+        case LOSS:
+            return parent.lose(segment);
+
+        case NONE:
+            return parent;
+
+        default:
+            throw new IllegalStateException("Unknown CNA type.");
+        }
+    }
+
+    private CNAType selectEvent(SegmentCNGenotype parent, GenomeSegment segment) {
+        int copyNum = parent.count(segment);
+        return getEventSet(segment, copyNum).select();
     }
 
     // -------------------------------------------------------------- //

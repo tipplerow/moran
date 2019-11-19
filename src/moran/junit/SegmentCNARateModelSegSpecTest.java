@@ -16,7 +16,7 @@ public class SegmentCNARateModelSegSpecTest extends NumericTestBase {
         System.setProperty(GenomeSegment.DEFINITION_FILE_PROPERTY, "data/test/test_segment2.txt");
         System.setProperty(SegmentCNGenotype.MAX_COPY_NUMBER_PROPERTY, "4");
 
-        System.setProperty(SegmentCNARateModel.WGD_RATE_PROPERTY, "0.1111");
+        System.setProperty(SegmentCNARateModel.WGD_RATE_PROPERTY, "0.1234");
         System.setProperty(SegmentCNARateModel.RATE_FILE_PROPERTY, "data/test/cna_rate1.csv");
     }
 
@@ -26,31 +26,31 @@ public class SegmentCNARateModelSegSpecTest extends NumericTestBase {
     @Test public void testGlobal() {
         SegmentCNARateModel model = SegmentCNARateModel.global();
 
-        assertRate(0.1111, model.getWGDRate());
+        assertRate(0.1234, model.getWGDRate());
 
         assertRate(0.0,  model.getGainRate(P6, 0)); // Cannot gain from zero copy number
-        assertRate(0.12, model.getGainRate(P6, 1));
-        assertRate(0.12, model.getGainRate(P6, 2));
-        assertRate(0.12, model.getGainRate(P6, 3));
+        assertRate(0.11, model.getGainRate(P6, 1));
+        assertRate(0.11, model.getGainRate(P6, 2));
+        assertRate(0.11, model.getGainRate(P6, 3));
         assertRate(0.0,  model.getGainRate(P6, 4)); // Cannot gain beyond the maximum copy number
 
         assertRate(0.0,  model.getLossRate(P6, 0)); // Cannot lose from zero copy number
-        assertRate(0.34, model.getLossRate(P6, 1));
-        assertRate(0.34, model.getLossRate(P6, 2));
-        assertRate(0.34, model.getLossRate(P6, 3));
-        assertRate(0.34, model.getLossRate(P6, 4));
+        assertRate(0.22, model.getLossRate(P6, 1));
+        assertRate(0.22, model.getLossRate(P6, 2));
+        assertRate(0.22, model.getLossRate(P6, 3));
+        assertRate(0.22, model.getLossRate(P6, 4));
 
         assertRate(0.0,  model.getGainRate(Q9, 0)); // Cannot gain from zero copy number
-        assertRate(0.56, model.getGainRate(Q9, 1));
-        assertRate(0.56, model.getGainRate(Q9, 2));
-        assertRate(0.56, model.getGainRate(Q9, 3));
+        assertRate(0.33, model.getGainRate(Q9, 1));
+        assertRate(0.33, model.getGainRate(Q9, 2));
+        assertRate(0.33, model.getGainRate(Q9, 3));
         assertRate(0.0,  model.getGainRate(Q9, 4)); // Cannot gain beyond the maximum copy number
 
         assertRate(0.0,  model.getLossRate(Q9, 0)); // Cannot lose from zero copy number
-        assertRate(0.78, model.getLossRate(Q9, 1));
-        assertRate(0.78, model.getLossRate(Q9, 2));
-        assertRate(0.78, model.getLossRate(Q9, 3));
-        assertRate(0.78, model.getLossRate(Q9, 4));
+        assertRate(0.44, model.getLossRate(Q9, 1));
+        assertRate(0.44, model.getLossRate(Q9, 2));
+        assertRate(0.44, model.getLossRate(Q9, 3));
+        assertRate(0.44, model.getLossRate(Q9, 4));
     }
 
     private void assertRate(double expected, Probability actual) {

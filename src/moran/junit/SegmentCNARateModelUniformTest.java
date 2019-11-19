@@ -2,6 +2,7 @@
 package moran.junit;
 
 import jam.junit.NumericTestBase;
+import jam.math.DoubleUtil;
 import jam.math.Probability;
 
 import moran.segment.GenomeSegment;
@@ -52,6 +53,63 @@ public class SegmentCNARateModelUniformTest extends NumericTestBase {
         assertRate(0.456, model.getLossRate(Q9, 2));
         assertRate(0.456, model.getLossRate(Q9, 3));
         assertRate(0.456, model.getLossRate(Q9, 4));
+    }
+
+    @Test public void testMutate() {
+        int countWGD   = 0;
+        int countGain  = 0;
+        int countLoss  = 0;
+        int countTrial = 100000;
+
+        for (int trialIndex = 0; trialIndex < countTrial; ++trialIndex) {
+            SegmentCNGenotype genotype =
+                SegmentCNARateModel.global().mutate(SegmentCNGenotype.WILD_TYPE);
+
+            if (isDoubled(genotype))
+                ++countWGD;
+
+            countGain += countGain(genotype);
+            countLoss += countLoss(genotype);
+        }
+
+        double rateWGD = DoubleUtil.ratio(countWGD,  countTrial);
+
+        // Halve the gain and loss rates because there are two
+        // independent segments...
+        double rateGain = 0.5 * DoubleUtil.ratio(countGain, countTrial);
+        double rateLoss = 0.5 * DoubleUtil.ratio(countLoss, countTrial);
+
+        assertEquals(0.078, rateWGD,  0.001);
+        assertEquals(0.123, rateGain, 0.001);
+        assertEquals(0.456, rateLoss, 0.001);
+    }
+
+    private boolean isDoubled(SegmentCNGenotype genotype) {
+        return genotype.count(P6) == 4 && genotype.count(Q9) == 4;
+    }
+
+    private int countGain(SegmentCNGenotype genotype) {
+        int count = 0;
+
+        if (genotype.count(P6) == 3)
+            ++count;
+
+        if (genotype.count(Q9) == 3)
+            ++count;
+
+        return count;
+    }
+
+    private int countLoss(SegmentCNGenotype genotype) {
+        int count = 0;
+
+        if (genotype.count(P6) == 1)
+            ++count;
+
+        if (genotype.count(Q9) == 1)
+            ++count;
+
+        return count;
     }
 
     private void assertRate(double expected, Probability actual) {

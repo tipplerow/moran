@@ -50,7 +50,7 @@ public final class SegmentCNASet {
      *
      * @return a new event set rate matrix for the specified event type.
      */
-    public static SegmentCNASet create(double rateWGD,
+    public static SegmentCNASet create(Probability rateWGD,
                                        SegmentCNARateMatrix gainRates,
                                        SegmentCNARateMatrix lossRates) {
         return new SegmentCNASet(Builder.build(rateWGD, gainRates, lossRates));
@@ -75,14 +75,14 @@ public final class SegmentCNASet {
     // -------------------------------------------------------------- //
 
     private static final class Builder {
-        private final double rateWGD;
+        private final Probability rateWGD;
         private final SegmentCNARateMatrix gainRates;
         private final SegmentCNARateMatrix lossRates;
 
         private final List<List<EventSet<CNAType>>> setList =
             new ArrayList<List<EventSet<CNAType>>>();
 
-        private Builder(double rateWGD,
+        private Builder(Probability rateWGD,
                         SegmentCNARateMatrix gainRates,
                         SegmentCNARateMatrix lossRates) {
             this.rateWGD = rateWGD;
@@ -90,7 +90,7 @@ public final class SegmentCNASet {
             this.lossRates = lossRates;
         }
 
-        private static List<List<EventSet<CNAType>>> build(double rateWGD,
+        private static List<List<EventSet<CNAType>>> build(Probability rateWGD,
                                                            SegmentCNARateMatrix gainRates,
                                                            SegmentCNARateMatrix lossRates) {
             Builder builder = new Builder(rateWGD, gainRates, lossRates);
@@ -107,7 +107,7 @@ public final class SegmentCNASet {
         private List<EventSet<CNAType>> createSegmentEventSets(GenomeSegment segment) {
             List<EventSet<CNAType>> segmentList = new ArrayList<EventSet<CNAType>>();
 
-            for (int copyNum = 0; copyNum < SegmentCNGenotype.maxCopyNumber(); ++copyNum)
+            for (int copyNum = 0; copyNum <= SegmentCNGenotype.maxCopyNumber(); ++copyNum)
                 segmentList.add(createSegmentEventSet(segment, copyNum));
 
             return Collections.unmodifiableList(segmentList);
@@ -132,7 +132,7 @@ public final class SegmentCNASet {
             // only attempted in the simulations when whole-genome
             // doubling does not occur (with probability 1 - WGD).
             //
-            return rateCNA.times(1.0 / (1.0 - rateWGD));
+            return rateCNA.times(1.0 / (1.0 - rateWGD.doubleValue()));
         }
     }
 }
