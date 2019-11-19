@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import jam.app.JamProperties;
 import jam.lang.JamException;
+import jam.report.LineBuilder;
 
 import moran.cell.Genotype;
 
@@ -56,14 +57,14 @@ public final class SegmentCNGenotype implements Genotype {
     public static final int MAX_COPY_NUMBER_DEFAULT = 8;
 
     /**
-     * The wild-type genotype with {@code CN = 2} for all genome
+     * The germline genotype with {@code CN = 2} for all genome
      * segments.
      */
-    public static final SegmentCNGenotype WILD_TYPE = createWildType();
+    public static final SegmentCNGenotype GERMLINE = createWildType();
 
     private static SegmentCNGenotype createWildType() {
         int[] wild = new int[GenomeSegment.count()];
-        Arrays.fill(wild, SegmentCN.WILD_TYPE_COPY_NUMBER);
+        Arrays.fill(wild, SegmentCN.GERMLINE_COPY_NUMBER);
 
         return new SegmentCNGenotype(wild);
     }
@@ -185,5 +186,14 @@ public final class SegmentCNGenotype implements Genotype {
 
         if (copyNumber > maxCopyNumber)
             throw new IllegalArgumentException("Copy number exceeds the maximum.");
+    }
+
+    @Override public String toString() {
+        LineBuilder builder = new LineBuilder(", ");
+
+        for (GenomeSegment segment : GenomeSegment.list())
+            builder.append(segment.getKey() + " = " + count(segment));
+
+        return "CN(" + builder.toString() + ")";
     }
 }

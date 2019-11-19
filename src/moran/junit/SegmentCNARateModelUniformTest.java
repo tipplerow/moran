@@ -63,7 +63,7 @@ public class SegmentCNARateModelUniformTest extends NumericTestBase {
 
         for (int trialIndex = 0; trialIndex < countTrial; ++trialIndex) {
             SegmentCNGenotype genotype =
-                SegmentCNARateModel.global().mutate(SegmentCNGenotype.WILD_TYPE);
+                SegmentCNARateModel.global().mutate(SegmentCNGenotype.GERMLINE);
 
             if (isDoubled(genotype))
                 ++countWGD;

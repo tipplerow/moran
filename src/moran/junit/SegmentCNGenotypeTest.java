@@ -18,14 +18,14 @@ public class SegmentCNGenotypeTest {
     private static final GenomeSegment P12 = GenomeSegment.instance("12p");
 
     @Test public void testGain() {
-        SegmentCNGenotype genotype = SegmentCNGenotype.WILD_TYPE;
+        SegmentCNGenotype genotype = SegmentCNGenotype.GERMLINE;
 
         genotype = genotype.gain(P6);
         genotype = genotype.gain(P6);
         genotype = genotype.gain(Q9);
 
         assertCN(genotype, 4, 3, 2);
-        assertCN(SegmentCNGenotype.WILD_TYPE, 2, 2, 2);
+        assertCN(SegmentCNGenotype.GERMLINE, 2, 2, 2);
     }
 
     private void assertCN(SegmentCNGenotype genotype, int cnP6, int cnQ9, int cnP12) {
@@ -35,18 +35,19 @@ public class SegmentCNGenotypeTest {
     }
 
     @Test public void testLoss() {
-        SegmentCNGenotype genotype = SegmentCNGenotype.WILD_TYPE;
+        SegmentCNGenotype genotype = SegmentCNGenotype.GERMLINE;
 
         genotype = genotype.lose(P6);
         genotype = genotype.lose(P6);
         genotype = genotype.lose(Q9);
 
+        System.out.println(genotype);
         assertCN(genotype, 0, 1, 2);
-        assertCN(SegmentCNGenotype.WILD_TYPE, 2, 2, 2);
+        assertCN(SegmentCNGenotype.GERMLINE, 2, 2, 2);
     }
 
     @Test public void testMaxCopyNumber() {
-        SegmentCNGenotype genotype = SegmentCNGenotype.WILD_TYPE;
+        SegmentCNGenotype genotype = SegmentCNGenotype.GERMLINE;
 
         assertEquals(5, SegmentCNGenotype.maxCopyNumber());
 
@@ -65,7 +66,7 @@ public class SegmentCNGenotypeTest {
 
     @Test(expected = RuntimeException.class)
     public void testZeroGain() {
-        SegmentCNGenotype genotype = SegmentCNGenotype.WILD_TYPE;
+        SegmentCNGenotype genotype = SegmentCNGenotype.GERMLINE;
 
         genotype = genotype.lose(P6);
         genotype = genotype.lose(P6);
@@ -74,7 +75,7 @@ public class SegmentCNGenotypeTest {
 
     @Test(expected = RuntimeException.class)
     public void testZeroLoss() {
-        SegmentCNGenotype genotype = SegmentCNGenotype.WILD_TYPE;
+        SegmentCNGenotype genotype = SegmentCNGenotype.GERMLINE;
 
         genotype = genotype.lose(P6);
         genotype = genotype.lose(P6);

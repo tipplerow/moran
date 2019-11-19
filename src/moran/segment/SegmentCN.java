@@ -65,7 +65,7 @@ public final class SegmentCN implements Comparable<SegmentCN> {
     /**
      * Copy number for wild-type (unmutated) genomes.
      */
-    public static final int WILD_TYPE_COPY_NUMBER = 2;
+    public static final int GERMLINE_COPY_NUMBER = 2;
 
     /**
      * Returns the wild-type copy number object for a given genome
@@ -76,8 +76,8 @@ public final class SegmentCN implements Comparable<SegmentCN> {
      * @return the wild-type copy number object for the specified
      * genome segment.
      */
-    public static SegmentCN wildType(GenomeSegment segment) {
-        return instance(segment, WILD_TYPE_COPY_NUMBER);
+    public static SegmentCN germline(GenomeSegment segment) {
+        return instance(segment, GERMLINE_COPY_NUMBER);
     }
 
     /**
