@@ -28,8 +28,7 @@ public final class SegmentCNGenotype implements Genotype {
     private static final int maxCopyNumber = resolveMaxCopyNumber();
 
     private static int resolveMaxCopyNumber() {
-        int max = JamProperties.getOptionalInt(MAX_COPY_NUMBER_PROPERTY,
-                                               MAX_COPY_NUMBER_DEFAULT);
+        int max = JamProperties.getRequiredInt(MAX_COPY_NUMBER_PROPERTY);
 
         if (max < 2)
             throw new IllegalStateException("The maximum copy number must be at least two.");
@@ -50,11 +49,6 @@ public final class SegmentCNGenotype implements Genotype {
      * copy number (must be at least two).
      */
     public static final String MAX_COPY_NUMBER_PROPERTY = "moran.segment.maxCopyNumber";
-
-    /**
-     * Default value for the maximum allowed copy number.
-     */
-    public static final int MAX_COPY_NUMBER_DEFAULT = 8;
 
     /**
      * The germline genotype with {@code CN = 2} for all genome
