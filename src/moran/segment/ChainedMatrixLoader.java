@@ -25,6 +25,23 @@ final class ChainedMatrixLoader {
         return JamProperties.getRequiredEnum(SegmentCNPhenotype.FITNESS_CHAIN_OPERATION_PROPERTY, FitnessChainOperation.class);
     }
 
+    // Two rows (gain/loss) for each genome segment...
+    static final int ROW_COUNT = 2 * GenomeSegment.count();
+
+    // Segment key, gain/loss flag, relative fitness
+    static final int COL_COUNT = 3;
+
+    static boolean isChained(List<String> lines) {
+        if (lines.size() != ROW_COUNT)
+            return false;
+
+        for (String line : lines)
+            if (RegexUtil.split(FitnessMatrixLoader.DELIM, line).length != COL_COUNT)
+                return false;
+
+        return true;
+    }
+
     static void load(JamMatrix matrix, List<String> lines) {
         ChainedMatrixLoader loader = new ChainedMatrixLoader(matrix, lines);
         loader.load();
@@ -36,13 +53,13 @@ final class ChainedMatrixLoader {
     }
 
     private void processLine(String line) {
-        String[] fields = RegexUtil.split(FitnessMatrixLoader.DELIM, line, 3);
+        String[] fields = RegexUtil.split(FitnessMatrixLoader.DELIM, line, COL_COUNT);
 
         GenomeSegment segment = GenomeSegment.require(fields[0]);
         CNAType       cnaType = CNAType.instance(fields[1]);
         double        fitness = Double.parseDouble(fields[2]);
 
-        // Unit fitness for the wild type...
+        // Unit fitness for the germline (wild type)...
         int row = segment.indexOf();
         matrix.set(row, 2, 1.0);
 

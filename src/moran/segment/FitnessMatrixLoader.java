@@ -22,16 +22,22 @@ final class FitnessMatrixLoader {
 
     static final Pattern DELIM = RegexUtil.COMMA;
 
+    // One row for each genome segment...
+    static final int ROW_COUNT = GenomeSegment.count();
+
+    // One column for each allowed copy number...
+    static final int COL_COUNT = SegmentCNGenotype.maxCopyNumber() + 1;
+
     static JamMatrix load(String fileName) {
         FitnessMatrixLoader loader = new FitnessMatrixLoader(fileName);
         return loader.load();
     }
 
     static void validateFitness(MatrixView fitnessMatrix) {
-        if (fitnessMatrix.nrow() != rowCount())
+        if (fitnessMatrix.nrow() != ROW_COUNT)
             throw new IllegalArgumentException("Invalid fitness matrix row count.");
 
-        if (fitnessMatrix.ncol() != colCount())
+        if (fitnessMatrix.ncol() != COL_COUNT)
             throw new IllegalArgumentException("Invalid fitness matrix column count.");
 
         for (int row = 0; row < fitnessMatrix.nrow(); ++row)
@@ -40,30 +46,19 @@ final class FitnessMatrixLoader {
                     throw new IllegalArgumentException("Negative fitness value.");
     }
 
-    static int rowCount() {
-        //
-        // One row for each genome segment...
-        //
-        return GenomeSegment.count();
-    }
-
-    static int colCount() {
-        //
-        // One column for each allowed copy number...
-        //
-        return SegmentCNGenotype.maxCopyNumber() + 1;
-    }
-
     private JamMatrix load() {
         lines = DataReader.read(fileName, RegexUtil.PYTHON_COMMENT);
         matrix = initMatrix();
 
-        if (lines.size() == 2 * rowCount())
+        if (ChainedMatrixLoader.isChained(lines)) {
             ChainedMatrixLoader.load(matrix, lines);
-        else if (lines.size() == rowCount() + 1)
+        }
+        else if (ExplicitMatrixLoader.isExplicit(lines)) {
             ExplicitMatrixLoader.load(matrix, lines);
-        else
+        }
+        else {
             throw JamException.runtime("Unexpected line count in [%s].", fileName);
+        }
 
         validateFitness(matrix);
         return matrix;
@@ -75,6 +70,6 @@ final class FitnessMatrixLoader {
         // processing the data file that all elements were assigned
         // valid, non-negative values...
         //
-        return new JamMatrix(rowCount(), colCount(), -1.0);
+        return new JamMatrix(ROW_COUNT, COL_COUNT, -1.0);
     }
 }
