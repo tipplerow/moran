@@ -1,7 +1,9 @@
 
 package moran.report;
 
+import java.io.File;
 import java.text.DecimalFormat;
+import java.util.List;
 
 import jam.math.Point;
 import jam.report.LineBuilder;
@@ -68,8 +70,8 @@ public abstract class MoranReport {
         // Obtain the dimensionality from the coordinate of the first
         // cell...
         //
-        Cell cell = viewSpace().list().get(0);
-        Point point = viewSpace().locate(cell);
+        Cell cell = listCells().get(0);
+        Point point = locateCell(cell);
 
         switch (point.dimensionality()) {
         case 1:
@@ -116,12 +118,42 @@ public abstract class MoranReport {
     }
 
     /**
+     * Returns the header text for cellular genotypes in report files.
+     *
+     * @return the header text for cellular genotypes in report files.
+     */
+    public String genotypeHeader() {
+        return listCells().get(0).getGenotype().header();
+    }
+
+    /**
      * Returns the global driver application.
      *
      * @return the global driver application.
      */
     public MoranDriver getDriver() {
         return driver;
+    }
+
+    /**
+     * Returns the directory where reports will be written.
+     *
+     * @return the directory where reports will be written.
+     */
+    public File getReportDir() {
+        return driver.getReportDir();
+    }
+
+    /**
+     * Returns a file located in the report directory.
+     *
+     * @param baseName the base name of the report file.
+     *
+     * @return a file with the specified base name located in the
+     * report directory.
+     */
+    public File getReportFile(String baseName) {
+        return driver.getReportFile(baseName);
     }
 
     /**
@@ -152,6 +184,27 @@ public abstract class MoranReport {
      */
     public double getTimeClock() {
         return driver.getTimeClock();
+    }
+
+    /**
+     * Returns a read-only list view of the cells in the simulation.
+     *
+     * @return a read-only list view of the cells in the simulation.
+     */
+    public List<Cell> listCells() {
+        return viewSpace().list();
+    }
+
+    /**
+     * Returns the spatial location of cell in the simulation space.
+     *
+     * @param cell the cell to locate.
+     *
+     * @return the spatial location of the cell ({@code null} if the
+     * cell is not present).
+     */
+    public Point locateCell(Cell cell) {
+        return viewSpace().locate(cell);
     }
 
     /**

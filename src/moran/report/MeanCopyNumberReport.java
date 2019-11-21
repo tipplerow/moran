@@ -14,13 +14,13 @@ import moran.space.SpaceView;
  * Reports the mean fitness of the cell population for each trial and
  * time step.
  */
-public final class MeanFitnessReport extends MoranReport {
+public final class MeanCopyNumberReport extends MoranReport {
     //
     // All mean fitness records indexed by trial and time step...
     //
-    private final StepRecordCache<MeanFitnessRecord> cache = StepRecordCache.create();
+    private final StepRecordCache<MeanCopyNumberRecord> cache = StepRecordCache.create();
 
-    private MeanFitnessReport(MoranDriver driver) {
+    private MeanCopyNumberReport(MoranDriver driver) {
         super(driver);
     }
 
@@ -28,7 +28,7 @@ public final class MeanFitnessReport extends MoranReport {
      * Name of the system property that specifies whether to run the
      * mean fitness report.
      */
-    public static final String RUN_REPORT_PROPERTY = "moran.report.runMeanFitnessReport";
+    public static final String RUN_REPORT_PROPERTY = "moran.report.runMeanCopyNumberReport";
 
     /**
      * Creates a new report for a given driver application.
@@ -37,8 +37,8 @@ public final class MeanFitnessReport extends MoranReport {
      *
      * @return the new report object.
      */
-    public static MeanFitnessReport create(MoranDriver driver) {
-        return new MeanFitnessReport(driver);
+    public static MeanCopyNumberReport create(MoranDriver driver) {
+        return new MeanCopyNumberReport(driver);
     }
 
     /**
@@ -56,7 +56,7 @@ public final class MeanFitnessReport extends MoranReport {
     }
 
     @Override public void initializeTrial() {
-        Collection<MeanFitnessRecord> trialRecords =
+        Collection<MeanCopyNumberRecord> trialRecords =
             cache.lookupTrial(getTrialIndex());
 
         if (!trialRecords.isEmpty())
@@ -64,7 +64,7 @@ public final class MeanFitnessReport extends MoranReport {
     }
 
     @Override public void processStep() {
-        cache.add(MeanFitnessRecord.create(getDriver()));
+        cache.add(MeanCopyNumberRecord.create(getDriver()));
     }
 
     @Override public void finalizeTrial() {

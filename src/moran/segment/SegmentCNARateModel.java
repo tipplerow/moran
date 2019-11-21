@@ -153,7 +153,7 @@ public final class SegmentCNARateModel {
      * <p>If this property is defined, the {@code GAIN_RATE_PROPERTY}
      * and {@code LOSS_RATE_PROPERTY} must <em>not</em> be defined.
      */
-    public static final String RATE_FILE_PROPERTY = "moran.segment.rateFile";
+    public static final String RATE_FILE_PROPERTY = "moran.segment.cnaRateFile";
 
     /**
      * Returns the global CNA rate model defined by system properties.

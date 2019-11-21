@@ -11,10 +11,13 @@ import jam.app.JamLogger;
 import jam.app.JamProperties;
 import jam.math.DoubleRange;
 import jam.math.IntRange;
+import jam.math.Point;
 import jam.sim.DiscreteTimeSimulation;
 
 import moran.cell.Cell;
 import moran.cell.Phenotype;
+import moran.report.GenotypeCoordReport;
+import moran.report.MeanCopyNumberReport;
 import moran.report.MeanFitnessReport;
 import moran.report.MoranReport;
 import moran.space.Space;
@@ -79,6 +82,12 @@ public abstract class MoranDriver extends DiscreteTimeSimulation {
         //
         // Register the reports common to most applications...
         //
+        if (GenotypeCoordReport.reportRequested())
+            registerReport(GenotypeCoordReport.create(this));
+
+        if (MeanCopyNumberReport.reportRequested())
+            registerReport(MeanCopyNumberReport.create(this));
+
         if (MeanFitnessReport.reportRequested())
             registerReport(MeanFitnessReport.create(this));
     }
@@ -191,6 +200,27 @@ public abstract class MoranDriver extends DiscreteTimeSimulation {
      */
     public double getTimeClock() {
         return process.getTimeClock();
+    }
+
+    /**
+     * Returns a read-only list view of the cells in the simulation.
+     *
+     * @return a read-only list view of the cells in the simulation.
+     */
+    public List<Cell> listCells() {
+        return viewSpace().list();
+    }
+
+    /**
+     * Returns the spatial location of cell in the simulation space.
+     *
+     * @param cell the cell to locate.
+     *
+     * @return the spatial location of the cell ({@code null} if the
+     * cell is not present).
+     */
+    public Point locateCell(Cell cell) {
+        return viewSpace().locate(cell);
     }
 
     /**
