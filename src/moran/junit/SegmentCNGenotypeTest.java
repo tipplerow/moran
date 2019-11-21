@@ -17,6 +17,17 @@ public class SegmentCNGenotypeTest {
     private static final GenomeSegment Q9  = GenomeSegment.instance("9q");
     private static final GenomeSegment P12 = GenomeSegment.instance("12p");
 
+    @Test public void testFormat() {
+        SegmentCNGenotype genotype = SegmentCNGenotype.GERMLINE;
+
+        genotype = genotype.gain(P6);
+        genotype = genotype.gain(P6);
+        genotype = genotype.gain(Q9);
+
+        assertEquals("4,3,2", genotype.format());
+        assertEquals("6p,9q,12p", genotype.header());
+    }
+
     @Test public void testGain() {
         SegmentCNGenotype genotype = SegmentCNGenotype.GERMLINE;
 
@@ -41,7 +52,6 @@ public class SegmentCNGenotypeTest {
         genotype = genotype.lose(P6);
         genotype = genotype.lose(Q9);
 
-        System.out.println(genotype);
         assertCN(genotype, 0, 1, 2);
         assertCN(SegmentCNGenotype.GERMLINE, 2, 2, 2);
     }

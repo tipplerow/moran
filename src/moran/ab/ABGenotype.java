@@ -50,4 +50,12 @@ public final class ABGenotype implements Genotype {
     public ABType type() {
         return type;
     }
+
+    @Override public String format() {
+        return type.name();
+    }
+
+    @Override public String header() {
+        return "ABType";
+    }
 }

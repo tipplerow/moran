@@ -188,6 +188,24 @@ public final class SegmentCNGenotype implements Genotype {
             throw new IllegalArgumentException("Copy number exceeds the maximum.");
     }
 
+    @Override public String format() {
+        LineBuilder builder = LineBuilder.csv();
+
+        for (GenomeSegment segment : GenomeSegment.list())
+            builder.append(count(segment));
+
+        return builder.toString();
+    }
+
+    @Override public String header() {
+        LineBuilder builder = LineBuilder.csv();
+
+        for (GenomeSegment segment : GenomeSegment.list())
+            builder.append(segment.getKey());
+
+        return builder.toString();
+    }
+
     @Override public String toString() {
         LineBuilder builder = new LineBuilder(", ");
 

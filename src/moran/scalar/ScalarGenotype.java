@@ -50,4 +50,12 @@ public final class ScalarGenotype implements Genotype {
     public double getFitness() {
         return fitness;
     }
+
+    @Override public String format() {
+        return Double.toString(fitness);
+    }
+
+    @Override public String header() {
+        return "fitness";
+    }
 }
