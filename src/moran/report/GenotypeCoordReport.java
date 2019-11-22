@@ -2,6 +2,7 @@
 package moran.report;
 
 import java.io.PrintWriter;
+import java.text.DecimalFormat;
 
 import jam.app.JamProperties;
 import jam.io.IOUtil;
@@ -19,6 +20,8 @@ import moran.driver.MoranDriver;
 public final class GenotypeCoordReport extends MoranReport {
     private final int interval;
     private PrintWriter writer;
+
+    private static final DecimalFormat TIME_CLOCK_FORMAT = new DecimalFormat("#0.0###");
 
     private GenotypeCoordReport(MoranDriver driver) {
         super(driver);
@@ -120,7 +123,7 @@ public final class GenotypeCoordReport extends MoranReport {
 
         builder.append(getTrialIndex());
         builder.append(getTimeStep());
-        builder.append(getTimeClock());
+        builder.append(getTimeClock(), TIME_CLOCK_FORMAT);
         builder.append(formatCoord(cell));
         builder.append(cell.getGenotype().format());
 
