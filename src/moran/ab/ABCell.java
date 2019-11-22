@@ -68,7 +68,7 @@ public final class ABCell extends Cell {
      * @return {@code true} iff this is a cell of type {@code B}.
      */
     public boolean isB() {
-        return genotype.isA();
+        return genotype.isB();
     }
 
     /**
