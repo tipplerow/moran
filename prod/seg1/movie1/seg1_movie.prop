@@ -1,0 +1,17 @@
+
+moran.driver.trialTarget = 1
+moran.driver.maxStepCount = 1000
+
+moran.report.runGenotypeCoordReport = true
+
+moran.report.genotypeCoordReportInterval = 1
+
+moran.segment.cnaRateFile       = seg1_cna_rate.csv
+moran.segment.definitionFile    = seg1_definition.csv
+moran.segment.fitnessMatrixFile = seg1_phenotype.csv
+moran.segment.maxCopyNumber     = 6
+moran.segment.rateWGD           = 0.0
+
+moran.space.structure = SQUARE; 1.0; 100, 100
+
+jam.math.randomSeed = 20191121
