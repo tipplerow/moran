@@ -113,6 +113,7 @@ public final class GenotypeCoordReport extends MoranReport {
         builder.append("stepIndex");
         builder.append("timeClock");
         builder.append(coordHeader());
+        builder.append("founder");
         builder.append(genotypeHeader());
 
         writer.println(builder.toString());
@@ -125,6 +126,7 @@ public final class GenotypeCoordReport extends MoranReport {
         builder.append(getTimeStep());
         builder.append(getTimeClock(), TIME_CLOCK_FORMAT);
         builder.append(formatCoord(cell));
+        builder.append(cell.getFounder().getIndex());
         builder.append(cell.getGenotype().format());
 
         writer.println(builder.toString());
