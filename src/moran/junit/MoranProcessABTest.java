@@ -25,7 +25,7 @@ public class MoranProcessABTest extends MoranProcessTestBase {
     }
 
     @Test public void testRun() {
-        runTest(25, 22.3940, 1.1200, true);
+        runTest(25, 23.5079, 1.1671, true);
     }
 
     @Override protected Space createSpace() {

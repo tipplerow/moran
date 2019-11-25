@@ -87,7 +87,7 @@ public final class ABCell extends Cell {
     private ABGenotype daughterGenotype() {
         if (isB()) {
             //
-            // Cells of type B never mutate, cells of type A mutate...
+            // Cells of type B never mutate...
             //
             return ABGenotype.B;
         }
