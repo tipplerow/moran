@@ -4,6 +4,7 @@ moran.driver.maxStepCount = 1000
 
 moran.report.runGenotypeCoordReport = true
 moran.report.runMeanCopyNumberReport = true
+moran.report.runMeanFitnessReport = true
 
 moran.report.genotypeCoordReportInterval = 100
 
