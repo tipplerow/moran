@@ -17,7 +17,7 @@ public enum ABType {
     },
 
     /**
-     * Cells of type {@code A}.
+     * Cells of type {@code B}.
      */
     B {
         @Override public ObjectFactory<ABCell> objectFactory() {
