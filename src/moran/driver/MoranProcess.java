@@ -26,16 +26,16 @@ import moran.space.SpaceView;
  *      a neighbor to divide.
  *   </li>
  *   <li>
- *     Update the dimensionless time clock according to the fitness
- *     of the neighbors of cell {@code I}.
- *   </li>
- *   <li>
  *     Select another cell {@code J} at random from the neighbors of
  *     cell {@code I} with a probability proportional to the fitness
  *     of cell {@code J}.
  *   </li>
  *   <li>
  *     Replace cell {@code I} with a daughter of cell {@code J}.
+ *   </li>
+ *   <li>
+ *     Update the dimensionless time clock according to the fitness
+ *     of the neighbors of cell {@code I}.
  *   </li>
  * </ol>
  */
